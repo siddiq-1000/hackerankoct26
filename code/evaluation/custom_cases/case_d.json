@@ -1,0 +1,33 @@
+{
+  "case_id": "case_custom_d",
+  "title": "NOT_APPLICABLE edge cases + non-English indirect deletion",
+  "subcases": [
+    {
+      "id": "D1",
+      "text": "Please delete my marketing profile but keep my account and order history intact.",
+      "expected_is_deletion": false,
+      "expected_status": "NOT_APPLICABLE",
+      "expected_steps": []
+    },
+    {
+      "id": "D2",
+      "text": "I am thinking about deleting my profile, not yet ready, can you tell me the steps?",
+      "expected_is_deletion": false,
+      "expected_status": "NOT_APPLICABLE",
+      "expected_steps": []
+    },
+    {
+      "id": "D3",
+      "text": "Please cancel my earlier deletion request. I have decided to stay.",
+      "expected_is_deletion": false,
+      "expected_status": "NOT_APPLICABLE",
+      "expected_steps": []
+    },
+    {
+      "id": "D4",
+      "text": "Por favor, não quero mais nenhum dado meu nos vossos servidores, encerrem tudo e apaguem o meu perfil.",
+      "expected_is_deletion": true,
+      "note": "Portuguese for 'Please, I no longer want any data of mine on your servers, close everything and erase my profile'. Must NOT be marked NOT_APPLICABLE."
+    }
+  ]
+}

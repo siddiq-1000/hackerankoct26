@@ -40,6 +40,71 @@ python3 code/main.py
 The blank template at `dataset/output.csv` is provided as a reference. Your final generated file for submission must be the root-level `output.csv`.
 
 
+## Solution & Execution Guide
+
+This repository contains the complete, production-ready AI-powered deletion-audit agent for **Ghost Data Still Exists**.
+
+### 1. Requirements & Setup
+
+The solution uses Python 3.10+ standard libraries (`sqlite3`, `csv`, `json`, `dataclasses`, `hashlib`, `zlib`, `base64`, `re`, `pathlib`). No external heavy dependencies are required.
+
+To configure optional LLM-assisted intent verification:
+```bash
+# On Linux / macOS
+export GEMINI_API_KEY="your-gemini-api-key"
+
+# On Windows (PowerShell)
+$env:GEMINI_API_KEY="your-gemini-api-key"
+```
+*(Note: If no API key is provided, the agent runs in 100% offline rule-based deterministic mode with zero errors and zero cost).*
+
+---
+
+### 2. Running the Full Deletion Audit Pipeline
+
+To process all 518 evaluation requests and write the final submission `output.csv` to the repository root:
+
+```bash
+python3 code/main.py
+```
+*(On Windows: `python code/main.py`)*
+
+Output:
+- Generates root-level `output.csv` containing exactly 518 data rows (`case_33` through `case_550`), sorted strictly by `case_id`.
+- Automatically executes internal schema, vocabulary, and sequence validation.
+
+---
+
+### 3. Running Evaluations & Test Suites
+
+#### A. Run the 32-Case Sample Evaluation (Gate 2)
+```bash
+python3 code/evaluation/main.py
+```
+Outputs status accuracy, row accuracy, sequence accuracy, step-level accuracy, and field-level accuracy against `dataset/sample_output.csv`.
+
+#### B. Run the 5 Custom Evaluation Cases (Gate 3)
+```bash
+python3 code/evaluation/test_custom_cases.py
+```
+Executes independent test fixtures for Cases A, B, C, D, and E in `code/evaluation/custom_cases/`.
+
+#### C. Run the Intent Shuffling Independence Test
+```bash
+python3 code/evaluation/test_intent_shuffling.py
+```
+Verifies that intent classification is 100% case-id independent and based solely on request text.
+
+---
+
+### 4. Evaluation Reports
+
+The evaluation results and token cost ledgers are available in:
+- [`code/evaluation/evaluation_report.md`](./code/evaluation/evaluation_report.md)
+- [`code/evaluation/usage_report.md`](./code/evaluation/usage_report.md)
+
+---
+
 ## Dataset
 
 All participant-facing files are in `dataset/`:

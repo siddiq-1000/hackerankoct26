@@ -1,0 +1,234 @@
+{
+  "evidence_04": {
+    "file_name": "account_admin_console_20260926.png",
+    "origin": "account_admin_portal",
+    "captured_at": "2026-09-26T11:00:00Z",
+    "system_id": "account_service",
+    "records": [
+      {
+        "resource_id": "account_5762",
+        "user_id": "user_11",
+        "name": "Haruka Sato",
+        "email": "haruka.s1838@zoho.com",
+        "phone": "+81 90 7610 2507",
+        "status": "ACTIVE",
+        "last_contact": "2026-09-24T00:14:00Z",
+        "orders": ["ORD-20265762", "ORD-20265518"],
+        "support_reference": "support_9538"
+      }
+    ]
+  },
+  "evidence_09": {
+    "file_name": "search_index_inspector_20260901.png",
+    "origin": "search_index_admin",
+    "captured_at": "2026-09-01T06:00:00Z",
+    "system_id": "search_service",
+    "records": [
+      {
+        "resource_id": "search_428",
+        "user_id": "user_13",
+        "name": "Gabriel Silva",
+        "email": "g.silva76@gmail.com",
+        "score": 9.84,
+        "indexed_at": "2026-09-01T05:58:21Z"
+      },
+      {
+        "resource_id": "search_1874",
+        "email": "g.silva76.jr@gmail.com",
+        "score": 4.12,
+        "indexed_at": "2026-09-01T05:55:03Z"
+      }
+    ]
+  },
+  "evidence_14": {
+    "file_name": "connector_management_console_20260807.png",
+    "origin": "integration_admin",
+    "captured_at": "2026-08-07T08:00:00Z",
+    "system_id": "integration_service",
+    "records": [
+      {
+        "resource_id": "data_flow_1121",
+        "destination": "customer_analytics_warehouse",
+        "selector": "jain.aditi@gmail.com",
+        "mode": "Continuous",
+        "status": "Healthy",
+        "enabled": true,
+        "last_contact": "2026-08-07T07:59:42Z"
+      },
+      {
+        "resource_id": "data_flow_9846",
+        "destination": "customer_analytics_warehouse",
+        "selector": "lucia-torres@gmail.com",
+        "mode": "Continuous",
+        "status": "Healthy",
+        "enabled": true,
+        "last_contact": "2026-08-07T07:59:36Z"
+      }
+    ]
+  },
+  "evidence_19": {
+    "file_name": "analytics_profile_view_20260713.png",
+    "origin": "analytics_platform",
+    "captured_at": "2026-07-13T10:00:00Z",
+    "system_id": "analytics_platform",
+    "records": [
+      {
+        "resource_id": "analytics_7438",
+        "user_id": "user_20",
+        "name": "Omar Darwish",
+        "email": "darwish.omar@icloud.com",
+        "market": "AE",
+        "audience": "Returning shopper",
+        "last_activity": "2026-07-13T14:22:00Z"
+      }
+    ]
+  },
+  "evidence_23": {
+    "file_name": "customer_export_console_20260618.png",
+    "origin": "export_service",
+    "captured_at": "2026-06-18T12:00:00Z",
+    "system_id": "export_service",
+    "records": [
+      {
+        "resource_id": "export_1260",
+        "filename": "customer_export_1260.zip",
+        "owner": "ingrid.dahl@outlook.com",
+        "status": "Ready",
+        "created_at": "2026-06-18T06:42:00Z",
+        "expires_at": "2026-06-25T06:42:00Z"
+      },
+      {
+        "resource_id": "export_1261",
+        "filename": "customer_export_1261.zip",
+        "owner": "marcus.lee@northstar.shop",
+        "status": "Collecting",
+        "created_at": "2026-06-20T14:18:00Z"
+      }
+    ]
+  },
+  "evidence_28": {
+    "file_name": "support_ticket_console_20260524.png",
+    "origin": "support_platform",
+    "captured_at": "2026-05-24T07:00:00Z",
+    "system_id": "support_platform",
+    "records": [
+      {
+        "resource_id": "support_1034",
+        "customer": "Kofi Agyeman",
+        "email": "kagyeman8947@fastmail.com",
+        "subject": "CS-5034 · Where is my delivery?",
+        "assigned_agent": "Maya Chen",
+        "has_shared_context": true,
+        "contains_conversation": true,
+        "status": "Open",
+        "created_at": "2026-05-24T09:12:00Z"
+      }
+    ]
+  },
+  "evidence_32": {
+    "file_name": "backup_restore_console_20260429.png",
+    "origin": "backup_service",
+    "captured_at": "2026-04-29T09:00:00Z",
+    "system_id": "backup_service",
+    "records": [
+      {
+        "resource_id": "backup_9287",
+        "account": "areed1433@gmail.com",
+        "region": "eu-west-1",
+        "created_at": "2026-04-26T02:00:00Z",
+        "restore_allowed": true,
+        "retention_end": "2026-07-26T00:00:00Z"
+      },
+      {
+        "resource_id": "backup_9291",
+        "account": "bluepeakco@outlook.com",
+        "region": "ap-southeast-1",
+        "created_at": "2026-04-26T02:00:00Z",
+        "restore_allowed": true
+      }
+    ]
+  },
+  "evidence_37": {
+    "file_name": "security_audit_explorer_20260905.png",
+    "origin": "security_service",
+    "captured_at": "2026-09-05T07:00:00Z",
+    "system_id": "security_service",
+    "records": [
+      {
+        "resource_id": "audit_record_003",
+        "user_id": "user_03",
+        "event_name": "account_closure_recorded",
+        "actor": "automated account workflow",
+        "recorded_at": "2026-08-25T04:03:00Z",
+        "valid": true
+      },
+      {
+        "resource_id": "audit_record_002",
+        "user_id": "user_03",
+        "event_name": "session_revoked",
+        "recorded_at": "2026-08-25T03:21:00Z",
+        "valid": true
+      },
+      {
+        "resource_id": "audit_record_001",
+        "user_id": "user_03",
+        "event_name": "recovery_challenge_completed",
+        "recorded_at": "2026-08-24T16:14:00Z",
+        "valid": true
+      }
+    ]
+  },
+  "evidence_42": {
+    "file_name": "deleted_account_reference_20260310.png",
+    "origin": "identity_service",
+    "captured_at": "2026-03-10T06:00:00Z",
+    "system_id": "identity_service",
+    "records": [
+      {
+        "resource_id": "tombstone_17",
+        "user_id": "user_17",
+        "reference_type": "Customer key",
+        "created_at": "2024-01-11T08:42:00Z",
+        "updated_at": "2026-03-10T07:18:00Z",
+        "pii_removed": true
+      }
+    ]
+  },
+  "evidence_46": {
+    "file_name": "object_storage_browser_20260213.png",
+    "origin": "object_storage",
+    "captured_at": "2026-02-13T08:00:00Z",
+    "system_id": "support_platform",
+    "records": [
+      {
+        "resource_id": "support_attachment_19",
+        "filename": "delivery_confirmation_19.pdf",
+        "uploader": "support-service",
+        "modified_at": "2026-02-12T18:42:00Z"
+      },
+      {
+        "resource_id": "support_attachment_20",
+        "filename": "delivery_confirmation_20.pdf",
+        "uploader": "support-service",
+        "modified_at": "2026-02-11T14:17:00Z"
+      }
+    ]
+  },
+  "evidence_60": {
+    "file_name": "marketing_profile_console.png",
+    "origin": "marketing_platform",
+    "captured_at": "2026-09-16T07:20:00Z",
+    "system_id": "marketing_platform",
+    "records": [
+      {
+        "resource_id": "marketing_001",
+        "name": "Soo-jin Park",
+        "email": "sj.park@naver.com",
+        "phone": "+82 10-5837-9451",
+        "market": "South Korea",
+        "email_opt_in": true,
+        "last_refreshed": "2026-09-15T23:40:00Z"
+      }
+    ]
+  }
+}

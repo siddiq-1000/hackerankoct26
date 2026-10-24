@@ -1,0 +1,94 @@
+{
+  "case_id": "case_custom_b",
+  "title": "Regional replica drift + tombstone PII",
+  "request": {
+    "case_id": "case_custom_b",
+    "email": "bruno.silva@custom.com",
+    "requested_at": "2026-08-15T10:00:00Z",
+    "reported_status": "COMPLETE",
+    "reported_at": "2026-08-18T10:00:00Z",
+    "audit_at": "2026-08-25T12:00:00Z",
+    "request_text": "I request the erasure of my account and all associated personal data."
+  },
+  "user_identity": {
+    "user_id": "user_custom_b",
+    "name": "Bruno Silva",
+    "email": "bruno.silva@custom.com",
+    "phone": "+55 11 98888 7777",
+    "email_hash": "c4ca4238a0b923820dcc509a6f75849b28b456a5996652495d038289a59518d6",
+    "updated_at": "2026-08-01T12:00:00Z"
+  },
+  "observed_resources": {
+    "account_custom_b": {
+      "system_id": "account_service",
+      "resource_id": "account_custom_b",
+      "category": "USER_PROFILE",
+      "observed_state": "PRESENT",
+      "evidence_id": "evidence_29"
+    },
+    "tombstone_custom_b": {
+      "system_id": "identity_service",
+      "resource_id": "tombstone_custom_b",
+      "category": "ACCOUNT_TOMBSTONE",
+      "observed_state": "EXPOSED_PII",
+      "evidence_id": "evidence_51"
+    }
+  },
+  "expected_status": "INCOMPLETE",
+  "expected_steps": [
+    {
+      "step_no": 1,
+      "phase": "FINDING",
+      "system_id": "account_service",
+      "resource_id": "account_custom_b",
+      "operation": "REPORT_REMAINING_RECORD",
+      "state": "PRESENT",
+      "evidence_id": "evidence_29"
+    },
+    {
+      "step_no": 2,
+      "phase": "FINDING",
+      "system_id": "identity_service",
+      "resource_id": "tombstone_custom_b",
+      "operation": "REPORT_EXPOSED_PII",
+      "state": "PRESENT",
+      "evidence_id": "evidence_51"
+    },
+    {
+      "step_no": 3,
+      "phase": "REMEDIATION",
+      "system_id": "account_service",
+      "resource_id": "account_custom_b",
+      "operation": "DELETE_RECORD",
+      "state": "ABSENT",
+      "evidence_id": ""
+    },
+    {
+      "step_no": 4,
+      "phase": "REMEDIATION",
+      "system_id": "identity_service",
+      "resource_id": "tombstone_custom_b",
+      "operation": "REDACT_RECORD",
+      "state": "REDACTED",
+      "evidence_id": ""
+    },
+    {
+      "step_no": 5,
+      "phase": "VERIFICATION",
+      "system_id": "account_service",
+      "resource_id": "account_custom_b",
+      "operation": "VERIFY_RECORD_ABSENT",
+      "state": "ABSENT",
+      "evidence_id": ""
+    },
+    {
+      "step_no": 6,
+      "phase": "VERIFICATION",
+      "system_id": "identity_service",
+      "resource_id": "tombstone_custom_b",
+      "operation": "VERIFY_RECORD_REDACTED",
+      "state": "REDACTED",
+      "evidence_id": ""
+    }
+  ]
+}

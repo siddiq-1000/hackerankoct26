@@ -1,0 +1,102 @@
+{
+  "case_id": "case_custom_a",
+  "title": "Multi-hop historical email collision + active connector",
+  "request": {
+    "case_id": "case_custom_a",
+    "email": "alice.old@custom.com",
+    "requested_at": "2026-08-10T09:00:00Z",
+    "reported_status": "PARTIALLY_COMPLETE",
+    "reported_at": "2026-08-12T10:00:00Z",
+    "audit_at": "2026-08-20T12:00:00Z",
+    "request_text": "Please delete my account and all personal information associated with this email."
+  },
+  "user_identity": {
+    "user_id": "user_custom_a",
+    "name": "Alice Morgan",
+    "email": "alice.now@custom.com",
+    "phone": "+1 555 019 2834",
+    "email_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "updated_at": "2026-08-01T12:00:00Z"
+  },
+  "audit_log": [
+    {
+      "audit_id": "audit_custom_a1",
+      "user_id": "user_custom_a",
+      "event_time": "2026-06-01T10:00:00Z",
+      "field_name": "email",
+      "old_value": "alice.first@custom.com",
+      "new_value": "alice.old@custom.com"
+    },
+    {
+      "audit_id": "audit_custom_a2",
+      "user_id": "user_custom_a",
+      "event_time": "2026-07-15T11:00:00Z",
+      "field_name": "email",
+      "old_value": "alice.old@custom.com",
+      "new_value": "alice.now@custom.com"
+    },
+    {
+      "audit_id": "audit_collision_1",
+      "user_id": "user_unrelated_x",
+      "event_time": "2026-07-20T12:00:00Z",
+      "field_name": "email",
+      "old_value": "typo@custom.com",
+      "new_value": "alice.old@custom.com"
+    }
+  ],
+  "observed_resources": {
+    "account_custom_a": {
+      "system_id": "account_service",
+      "resource_id": "account_custom_a",
+      "category": "USER_PROFILE",
+      "observed_state": "ABSENT",
+      "evidence_id": "evidence_54"
+    },
+    "data_flow_9901": {
+      "system_id": "integration_service",
+      "resource_id": "data_flow_9901",
+      "category": "ACTIVE_DATA_FLOW",
+      "observed_state": "ACTIVE_FLOW",
+      "evidence_id": "evidence_03"
+    }
+  },
+  "expected_status": "INCOMPLETE",
+  "expected_steps": [
+    {
+      "step_no": 1,
+      "phase": "FINDING",
+      "system_id": "integration_service",
+      "resource_id": "data_flow_9901",
+      "operation": "REPORT_ACTIVE_DATA_FLOW",
+      "state": "ACTIVE",
+      "evidence_id": "evidence_03"
+    },
+    {
+      "step_no": 2,
+      "phase": "REMEDIATION",
+      "system_id": "integration_service",
+      "resource_id": "data_flow_9901",
+      "operation": "DISABLE_DATA_FLOW",
+      "state": "DISABLED",
+      "evidence_id": ""
+    },
+    {
+      "step_no": 3,
+      "phase": "VERIFICATION",
+      "system_id": "account_service",
+      "resource_id": "account_custom_a",
+      "operation": "VERIFY_RECORD_ABSENT",
+      "state": "ABSENT",
+      "evidence_id": ""
+    },
+    {
+      "step_no": 4,
+      "phase": "VERIFICATION",
+      "system_id": "integration_service",
+      "resource_id": "data_flow_9901",
+      "operation": "VERIFY_DATA_FLOW_DISABLED",
+      "state": "DISABLED",
+      "evidence_id": ""
+    }
+  ]
+}

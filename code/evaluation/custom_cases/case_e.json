@@ -1,0 +1,110 @@
+{
+  "case_id": "case_custom_e",
+  "title": "Reported COMPLETE but active data flow and unblocked restore risk",
+  "request": {
+    "case_id": "case_custom_e",
+    "email": "elena.rostova@custom.com",
+    "requested_at": "2026-08-28T10:00:00Z",
+    "reported_status": "COMPLETE",
+    "reported_at": "2026-08-30T10:00:00Z",
+    "audit_at": "2026-09-08T12:00:00Z",
+    "request_text": "Please delete my account and erase all my personal records completely."
+  },
+  "user_identity": {
+    "user_id": "user_custom_e",
+    "name": "Elena Rostova",
+    "email": "elena.rostova@custom.com",
+    "phone": "+7 916 123 45 67",
+    "email_hash": "eccbc87e4b5ce2fe28308fd9f2a7baf3",
+    "updated_at": "2026-08-01T12:00:00Z"
+  },
+  "observed_resources": {
+    "account_custom_e": {
+      "system_id": "account_service",
+      "resource_id": "account_custom_e",
+      "category": "USER_PROFILE",
+      "observed_state": "ABSENT",
+      "evidence_id": "evidence_54"
+    },
+    "data_flow_custom_e": {
+      "system_id": "integration_service",
+      "resource_id": "data_flow_custom_e",
+      "category": "ACTIVE_DATA_FLOW",
+      "observed_state": "ACTIVE_FLOW",
+      "evidence_id": "evidence_01"
+    },
+    "backup_custom_e": {
+      "system_id": "backup_service",
+      "resource_id": "backup_custom_e",
+      "category": "BACKUP_ARCHIVE",
+      "observed_state": "RESTORE_RISK",
+      "evidence_id": "evidence_93"
+    }
+  },
+  "expected_status": "INCOMPLETE",
+  "expected_steps": [
+    {
+      "step_no": 1,
+      "phase": "FINDING",
+      "system_id": "integration_service",
+      "resource_id": "data_flow_custom_e",
+      "operation": "REPORT_ACTIVE_DATA_FLOW",
+      "state": "ACTIVE",
+      "evidence_id": "evidence_01"
+    },
+    {
+      "step_no": 2,
+      "phase": "FINDING",
+      "system_id": "backup_service",
+      "resource_id": "backup_custom_e",
+      "operation": "REPORT_RESTORE_RISK",
+      "state": "ACTIVE",
+      "evidence_id": "evidence_93"
+    },
+    {
+      "step_no": 3,
+      "phase": "REMEDIATION",
+      "system_id": "integration_service",
+      "resource_id": "data_flow_custom_e",
+      "operation": "DISABLE_DATA_FLOW",
+      "state": "DISABLED",
+      "evidence_id": ""
+    },
+    {
+      "step_no": 4,
+      "phase": "REMEDIATION",
+      "system_id": "backup_service",
+      "resource_id": "backup_custom_e",
+      "operation": "BLOCK_RESTORE",
+      "state": "BLOCKED",
+      "evidence_id": ""
+    },
+    {
+      "step_no": 5,
+      "phase": "VERIFICATION",
+      "system_id": "account_service",
+      "resource_id": "account_custom_e",
+      "operation": "VERIFY_RECORD_ABSENT",
+      "state": "ABSENT",
+      "evidence_id": ""
+    },
+    {
+      "step_no": 6,
+      "phase": "VERIFICATION",
+      "system_id": "integration_service",
+      "resource_id": "data_flow_custom_e",
+      "operation": "VERIFY_DATA_FLOW_DISABLED",
+      "state": "DISABLED",
+      "evidence_id": ""
+    },
+    {
+      "step_no": 7,
+      "phase": "VERIFICATION",
+      "system_id": "backup_service",
+      "resource_id": "backup_custom_e",
+      "operation": "VERIFY_RESTORE_BLOCKED",
+      "state": "BLOCKED",
+      "evidence_id": ""
+    }
+  ]
+}

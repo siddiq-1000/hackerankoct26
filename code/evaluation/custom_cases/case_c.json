@@ -1,0 +1,66 @@
+{
+  "case_id": "case_custom_c",
+  "title": "Post-audit_at decoy activity (temporal cutoff test)",
+  "request": {
+    "case_id": "case_custom_c",
+    "email": "charlotte.dupont@custom.com",
+    "requested_at": "2026-08-20T08:00:00Z",
+    "reported_status": "COMPLETE",
+    "reported_at": "2026-08-22T08:00:00Z",
+    "audit_at": "2026-09-01T12:00:00Z",
+    "request_text": "Please delete my account and all personal information."
+  },
+  "user_identity": {
+    "user_id": "user_custom_c",
+    "name": "Charlotte Dupont",
+    "email": "charlotte.dupont@custom.com",
+    "phone": "+33 6 12 34 56 78",
+    "email_hash": "c81e728d9d4c2f636f067f89cc14862c1ecd73b177a7f43f05352cfda1ff12e2",
+    "updated_at": "2026-08-01T12:00:00Z"
+  },
+  "observed_resources_at_audit": {
+    "account_custom_c": {
+      "system_id": "account_service",
+      "resource_id": "account_custom_c",
+      "category": "USER_PROFILE",
+      "observed_state": "ABSENT",
+      "evidence_id": "evidence_54"
+    },
+    "audit_record_custom_c": {
+      "system_id": "security_service",
+      "resource_id": "audit_record_custom_c",
+      "category": "SECURITY_AUDIT_LOG",
+      "observed_state": "PRESENT",
+      "evidence_id": "evidence_54"
+    }
+  },
+  "decoy_events_after_audit": [
+    {
+      "event_time": "2026-09-02T10:00:00Z",
+      "target_system": "backup_service",
+      "resource_id": "backup_decoy_c",
+      "details": "Decoy restore request permitted after audit cutoff."
+    }
+  ],
+  "expected_status": "COMPLETE",
+  "expected_steps": [
+    {
+      "step_no": 1,
+      "phase": "VERIFICATION",
+      "system_id": "account_service",
+      "resource_id": "account_custom_c",
+      "operation": "VERIFY_RECORD_ABSENT",
+      "state": "ABSENT",
+      "evidence_id": "evidence_54"
+    },
+    {
+      "step_no": 2,
+      "phase": "VERIFICATION",
+      "system_id": "security_service",
+      "resource_id": "audit_record_custom_c",
+      "operation": "VERIFY_RECORD_PRESENT",
+      "state": "PRESENT",
+      "evidence_id": "evidence_54"
+    }
+  ]
+}
