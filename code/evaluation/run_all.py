@@ -27,7 +27,7 @@ TEST_SUITES = [
     ("Custom Evaluation Cases A-E", ["code/evaluation/test_custom_cases.py"]),
     ("Public Sample Evaluation", ["code/evaluation/main.py"]),
     ("CSV Format & Contract Validation", ["code/validate.py"]),
-    ("Independent Oracle Discrepancy Scan", ["code/tools/analyze_discrepancies.py"]),
+    ("Preflight Output Verification", ["code/tools/preflight.py"]),
     ("Cross-Document Consistency Check", ["code/tools/consistency_check.py"]),
     ("Automated Document Claims Verification", ["code/tools/doc_claims_check.py"]),
     ("AGENTS.md §6.7 No Hardcoded Literal IDs", ["code/evaluation/test_no_hardcoded_ids.py"]),

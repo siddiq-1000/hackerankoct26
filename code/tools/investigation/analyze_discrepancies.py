@@ -9,7 +9,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from code.loaders import DatasetLoader
 from code.identity import IdentityResolver
-from code.tools.oracle_scan import OracleScanner
+from code.tools.investigation.oracle_scan import OracleScanner
 
 def analyze():
     loader = DatasetLoader()
