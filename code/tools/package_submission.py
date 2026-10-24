@@ -63,26 +63,13 @@ def create_submission_zip():
                 zf.write(fpath, arcname=rel_path)
                 included_entries.append(rel_path)
 
-        # 2. Package evaluation/ from code/evaluation/ so reports are accessible at both paths in the archive
-        eval_dir = REPO_ROOT / "evaluation"
-        if eval_dir.exists():
-            for root, dirs, files in os.walk(eval_dir):
-                dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
-                for file in files:
-                    fpath = Path(root) / file
-                    if file in EXCLUDED_FILES or fpath.suffix.lower() in EXCLUDED_EXTS:
-                        continue
-                    rel_path = fpath.relative_to(REPO_ROOT).as_posix()
-                    zf.write(fpath, arcname=rel_path)
-                    included_entries.append(rel_path)
-        else:
-            # Map from code/evaluation to evaluation/ in zip root to satisfy AGENTS.md §6.8
-            for rep_name in ["evaluation_report.md", "usage_report.md"]:
-                src = REPO_ROOT / "code" / "evaluation" / rep_name
-                if src.exists():
-                    arc_name = f"evaluation/{rep_name}"
-                    zf.write(src, arcname=arc_name)
-                    included_entries.append(arc_name)
+        # 2. Package evaluation reports at top-level evaluation/ to satisfy AGENTS.md §6.8
+        for rep_name in ["evaluation_report.md", "usage_report.md"]:
+            src = REPO_ROOT / "code" / "evaluation" / rep_name
+            if src.exists():
+                arc_name = f"evaluation/{rep_name}"
+                zf.write(src, arcname=arc_name)
+                included_entries.append(arc_name)
 
         # 3. Package root markdown and requirements
         root_files = ["README.md", "requirements.txt"]
@@ -92,6 +79,14 @@ def create_submission_zip():
                 rel_path = rf.name
                 zf.write(rf, arcname=rel_path)
                 included_entries.append(rel_path)
+
+    # Verify both copies are present and identical in the closed archive
+    with zipfile.ZipFile(OUTPUT_ZIP, "r") as zf:
+        for rep_name in ["evaluation_report.md", "usage_report.md"]:
+            top_bytes = zf.read(f"evaluation/{rep_name}")
+            code_bytes = zf.read(f"code/evaluation/{rep_name}")
+            assert top_bytes == code_bytes, f"Mismatch between code/evaluation/{rep_name} and evaluation/{rep_name}"
+    print("[*] Verified: evaluation/ and code/evaluation/ reports are byte-identical in code.zip")
 
     zip_size = OUTPUT_ZIP.stat().st_size
     print(f"[*] Packaged {len(included_entries)} files into {OUTPUT_ZIP.name}")

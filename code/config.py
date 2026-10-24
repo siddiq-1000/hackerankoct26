@@ -17,4 +17,7 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 INPUT_PRICE_PER_M = 0.075   # $0.075 / 1M input tokens
 OUTPUT_PRICE_PER_M = 0.30   # $0.30 / 1M output tokens
 
+# Analytics Linking Feature Switch (Brief 3D)
+LINK_NULL_IDENTIFIER_ANALYTICS = os.environ.get("LINK_NULL_IDENTIFIER_ANALYTICS", "true").lower() in ["1", "true", "yes"]
+
 CACHE_DIR.mkdir(parents=True, exist_ok=True)

@@ -12,7 +12,7 @@
 
 The audit agent is engineered with a **deterministic-first, cost-optimal architecture**:
 1. **Rule Engine & Evidence Indexing:** SQLite queries on SQL snapshots, stream-level PDF decoding, JSON record parsing, and historical identity traversal are executed deterministically on-device at zero token cost.
-2. **Visual Evidence:** All 11 PNG screenshots from `dataset/evidence/images/` were pre-transcribed once during development using multimodal tooling, and checked into `code/cache/image_transcripts.json` for deterministic, zero-token evaluation.
+2. **Visual Evidence:** All 11 PNG screenshots from `dataset/evidence/images/` were inspected and transcribed once during development by the coding assistant itself (multimodal inspection in development environment), and checked into `code/cache/image_transcripts.json`. During the evaluation run, `main.py` parsed these cached transcripts deterministically with 0 runtime API or vision LLM calls.
 3. **Intent Classification Fallback:** Intent is classified through high-precision regexes covering all 10 non-deletion categories and multilingual phrases. When `GEMINI_API_KEY` is configured, borderline texts invoke `gemini-2.5-flash` with strict JSON mode; responses and token metrics are cached by SHA-256 prompt hash in `code/cache/`.
 4. **Offline Resilience:** If `GEMINI_API_KEY` is not set, the pipeline operates fully offline with on-disk heuristic fallbacks, ensuring 100% execution completion without external network failure.
 

@@ -62,7 +62,8 @@ During hardening, our investigation of the COMPLETE rate gap between sample (31.
 | :--- | :---: | :---: | :---: | :---: |
 | **Phase 1 Initial** | 368 (71.04%) | 140 (27.03%) | 10 (1.93%) | 103 Unexplained |
 | **After SQL JSON & OCR Fixes** | 228 (44.02%) | 280 (54.05%) | 10 (1.93%) | 37 Unexplained |
-| **Hardened Final** | **204 (39.38%)** | **304 (58.69%)** | **10 (1.93%)** | **0 Unexplained** |
+| **Phase 2 Baseline** | 204 (39.38%) | 304 (58.69%) | 10 (1.93%) | 0 Unexplained |
+| **Hardened Final (Trace-Join + Analytics)** | **200 (38.61%)** | **308 (59.46%)** | **10 (1.93%)** | **0 Unexplained** |
 
 ---
 
@@ -87,6 +88,10 @@ During hardening, our investigation of the COMPLETE rate gap between sample (31.
 ### 5. Analytics Finding Canonical Normalization
 - *Failure:* Syslog-extracted analytics exposures for `case_413` and `case_514` emitted `REPORT_REMAINING_RECORD` instead of `REPORT_EXPOSED_PII`, despite category `ANALYTICS_PROFILE` under `rule_07` mandating `ANONYMIZE`.
 - *Improvement:* Standardized observed state to `EXPOSED_PII` across all syslog parsers, ensuring that all 61 analytics exposure cases follow the canonical sequence: `REPORT_EXPOSED_PII` -> `ANONYMIZE_RECORD` -> `VERIFY_RECORD_ANONYMIZED`.
+
+### 6. Analytics Linking Heuristic & Multi-Line Log Trace Correlation
+- *Failure:* In asynchronous log frameworks, query initiation lines (holding user emails) were decoupled from completion lines (holding resource IDs and outcomes), causing remaining records in `case_416`, `case_417`, `case_420`, and `case_517` to be missed. In addition, properly anonymized analytics records with all-null direct identifiers had 0 verification steps on COMPLETE cases.
+- *Improvement:* Implemented full-log trace correlation by `trace_id` and `tr-\d+`, resolving outcomes across all services and correctly identifying leftovers in 4 cases (transitioning them from COMPLETE to INCOMPLETE). In addition, implemented `code/analytics_linker.py` combining deterministic cross-evidence linking and strict 1-to-1 batch matching. Evaluated on the 32 sample cases (10 COMPLETE, 7 positive), the linking heuristic achieved **100.0% precision** (6/6) and **85.7% recall** (6/7), with 0 false positives on negative complete cases (`case_01`, `case_02`, `case_31`) and 0 on the 22 incomplete cases. Across the full 518 cases, exactly 72 COMPLETE cases were paired with verified physical evidence captured at or before `audit_at`. To prevent decoy mispairing from the 76 orphan activity events and 62 multi-request batches with unequal counts (covering 102 cases), ambiguous batches were safely withheld.
 
 ---
 

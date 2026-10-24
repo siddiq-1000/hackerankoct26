@@ -71,8 +71,34 @@ def run_preflight() -> bool:
     print(f"[*] SHA-256 Hash: {file_sha256}")
 
     # 3. Read input case_ids and sort by case_id (contract requirement)
+    case_audit_at = {}
     with open(INPUT_CSV, "r", encoding="utf-8") as f:
-        input_cases = sorted([r["case_id"] for r in csv.DictReader(f)])
+        reader = csv.DictReader(f)
+        for r in reader:
+            case_audit_at[r["case_id"]] = r["audit_at"]
+    input_cases = sorted(list(case_audit_at.keys()))
+
+    # Load evidence manifests and timestamps for temporal validation
+    evidence_file_times = {}
+    ev_csv = REPO_ROOT / "dataset" / "evidence_files.csv"
+    if ev_csv.exists():
+        with open(ev_csv, "r", encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                evidence_file_times[r["file_id"]] = r["captured_at"]
+
+    activity_times = {}
+    act_csv = REPO_ROOT / "dataset" / "system_activity.csv"
+    if act_csv.exists():
+        with open(act_csv, "r", encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                activity_times[r["activity_id"]] = r["event_time"]
+
+    audit_times = {}
+    aud_csv = REPO_ROOT / "dataset" / "user_audit_log.csv"
+    if aud_csv.exists():
+        with open(aud_csv, "r", encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                audit_times[r["audit_id"]] = r["event_time"]
 
     if len(input_cases) != 518:
         errors.append(f"Expected 518 input cases in {INPUT_CSV}, got {len(input_cases)}")
@@ -164,6 +190,22 @@ def run_preflight() -> bool:
 
             if s.get("phase") in ["REMEDIATION"] and s.get("evidence_id") != "":
                 errors.append(f"Row {idx} [{cid}] REMEDIATION step must have empty evidence_id, got '{s.get('evidence_id')}'")
+
+            # Temporal Cutoff Check (AGENTS.md §6.2 & §6.6): cited evidence must be <= audit_at
+            ev_id = s.get("evidence_id")
+            if ev_id:
+                case_audit_dt = case_audit_at.get(cid)
+                if case_audit_dt:
+                    ev_time = None
+                    if ev_id in evidence_file_times:
+                        ev_time = evidence_file_times[ev_id]
+                    elif ev_id in activity_times:
+                        ev_time = activity_times[ev_id]
+                    elif ev_id in audit_times:
+                        ev_time = audit_times[ev_id]
+
+                    if ev_time and ev_time > case_audit_dt:
+                        errors.append(f"Row {idx} [{cid}] temporal violation: cited evidence {ev_id} ({ev_time}) is after audit_at ({case_audit_dt})")
 
     print("\n[*] Deletion Status Distribution:")
     for k, v in status_counts.items():

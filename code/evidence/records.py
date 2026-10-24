@@ -63,7 +63,7 @@ class RecordsAndLogsParser:
         data = self._json_cache[filename]
         hits = []
 
-        # Format A: service_resource_export (e.g. evidence_92)
+        # Format A: service_resource_export files
         if "service_exports" in data:
             for sys_id, export_data in data["service_exports"].items():
                 for coll_name, items in export_data.items():
@@ -78,7 +78,7 @@ class RecordsAndLogsParser:
                                 "matched_terms": matched
                             })
 
-        # Format B: snapshot bundle (e.g. evidence_51)
+        # Format B: snapshot bundle files
         elif "snapshots" in data:
             for sn in data.get("snapshots", []):
                 sys_id = sn.get("data_store", "account_service")

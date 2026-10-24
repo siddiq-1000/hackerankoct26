@@ -61,7 +61,7 @@ class StateReconstructor:
         terms = identity.all_search_terms()
         match_terms = build_term_matcher(terms)
 
-        # 1. Check handover log (evidence_03)
+        # 1. Check handover log text
         handover_path = self.dataset_dir / "evidence" / "records" / "customer_account_handover_20261001.txt"
         if handover_path.exists():
             with open(handover_path, "r", encoding="utf-8") as f:
@@ -71,7 +71,7 @@ class StateReconstructor:
                         if m:
                             return m.group(1)
 
-        # 2. Check readback trace logs (e.g. evidence_94, 91, 88...)
+        # 2. Check readback trace logs
         logs_dir = self.dataset_dir / "evidence" / "logs"
         for log_file in sorted(logs_dir.glob("resource_lookup_trace_*.log"), reverse=True):
             fid = self.path_to_fid.get(log_file.name)
@@ -106,7 +106,7 @@ class StateReconstructor:
                                 return m.group(1)
 
         # 5. Check system activity for deletion worker submission
-        # If user_id is user_01 - user_10, format is account_001 - account_010
+        # Leading zero padding for low numeric IDs
         if identity.user_id.startswith("user_"):
             num_str = identity.user_id.split("_")[1]
             if num_str.isdigit() and int(num_str) <= 10:
@@ -146,17 +146,16 @@ class StateReconstructor:
 
         # Default state for primary account: ABSENT unless proven PRESENT in a replica snapshot
         # Ensure evidence_id is strictly captured at or before audit_at
-        default_evidence_id = "evidence_54"
-        if self.manifest.get("evidence_54") and self.manifest["evidence_54"].captured_dt > audit_dt:
-            candidates = [
-                (ef.captured_dt, fid)
-                for fid, ef in self.manifest.items()
-                if ef.captured_dt <= audit_dt
-                and any(k in ef.file_path for k in ["replica", "inventory", "service_resource_export", "resource_lookup_trace"])
-            ]
-            if candidates:
-                candidates.sort(key=lambda x: x[0], reverse=True)
-                default_evidence_id = candidates[0][1]
+        candidates = [
+            (ef.captured_dt, fid)
+            for fid, ef in self.manifest.items()
+            if ef.captured_dt <= audit_dt
+            and any(k in ef.file_path for k in ["replica", "inventory", "service_resource_export", "resource_lookup_trace"])
+        ]
+        default_evidence_id = ""
+        if candidates:
+            candidates.sort(key=lambda x: x[0], reverse=True)
+            default_evidence_id = candidates[0][1]
 
         observed[account_id] = ObservedResource(
             system_id="account_service",
@@ -227,7 +226,7 @@ class StateReconstructor:
                             details=data
                         )
 
-                # Format C: Customer search index SQL (evidence_57)
+                # Format C: Customer search index SQL
                 elif "search" in db_name.lower() or "search" in table.lower() or table == "customer_search_documents":
                     s_id = data.get("search_id") or res_id or data.get("id")
                     if s_id:
@@ -286,7 +285,7 @@ class StateReconstructor:
                             evidence_time=ef.captured_at
                         )
 
-                # Format G: Backup inventory SQL (evidence_93, etc.)
+                # Format G: Backup inventory SQL
                 elif "inventory" in db_name.lower() or "backup" in table.lower() or table == "backup_restore_entries":
                     b_id = data.get("backup_id") or res_id
                     allowed = str(data.get("restore_allowed", "")).strip().lower() in ["1", "true"]
@@ -325,7 +324,7 @@ class StateReconstructor:
             if not ef or ef.captured_dt > audit_dt:
                 continue
 
-            # Check format A: service_resource_export (e.g. evidence_92)
+            # Check format A: service_resource_export files
             if "service_resource_export" in json_file.name:
                 try:
                     with open(json_file, "r", encoding="utf-8") as f:
@@ -470,7 +469,7 @@ class StateReconstructor:
                 except Exception:
                     pass
 
-            # Check format B: customer_data_snapshot_bundle (e.g. evidence_51)
+            # Check format B: customer_data_snapshot_bundle
             elif "customer_data_snapshot_bundle" in json_file.name:
                 try:
                     with open(json_file, "r", encoding="utf-8") as f:
@@ -504,7 +503,7 @@ class StateReconstructor:
                 except Exception:
                     pass
 
-            # Check format C: customer_export_jobs_*.json (e.g. evidence_59)
+            # Check format C: customer_export_jobs_*.json
             elif "customer_export_jobs" in json_file.name:
                 try:
                     with open(json_file, "r", encoding="utf-8") as f:
@@ -526,7 +525,7 @@ class StateReconstructor:
                 except Exception:
                     pass
 
-            # Check format D: customer_analytics_report_*.json (e.g. evidence_56)
+            # Check format D: customer_analytics_report_*.json
             elif "customer_analytics_report" in json_file.name:
                 try:
                     with open(json_file, "r", encoding="utf-8") as f:
@@ -546,11 +545,11 @@ class StateReconstructor:
                 except Exception:
                     pass
 
-        # 3. Check Handover Text (evidence_03) <= audit_dt
+        # 3. Check Handover Text <= audit_dt
         handover_path = self.dataset_dir / "evidence" / "records" / "customer_account_handover_20261001.txt"
-        fid_03 = self.path_to_fid.get("customer_account_handover_20261001.txt", "evidence_03")
-        ef_03 = self.manifest.get(fid_03)
-        if ef_03 and ef_03.captured_dt <= audit_dt and handover_path.exists():
+        fid_handover = self.path_to_fid.get("customer_account_handover_20261001.txt", "")
+        ef_handover = self.manifest.get(fid_handover)
+        if ef_handover and ef_handover.captured_dt <= audit_dt and handover_path.exists():
             with open(handover_path, "r", encoding="utf-8") as f:
                 for line in f:
                     if match_terms(line):
@@ -587,8 +586,8 @@ class StateReconstructor:
                                 resource_id=res_id,
                                 category=cat,
                                 observed_state=state,
-                                evidence_id=fid_03,
-                                evidence_time=ef_03.captured_at
+                                evidence_id=fid_handover,
+                                evidence_time=ef_handover.captured_at
                             )
 
         # 4. Check Readback Logs & Service Events Logs <= audit_dt
@@ -604,7 +603,7 @@ class StateReconstructor:
             with open(log_file, "r", encoding="utf-8", errors="ignore") as f:
                 lines = f.readlines()
 
-            # A. Support replica log (evidence_61) with trace correlation
+            # A. Support replica log with trace correlation
             if "support_replica" in log_file.name:
                 matching_traces = set()
                 for line in lines:
@@ -627,7 +626,7 @@ class StateReconstructor:
                                 evidence_time=ef.captured_at
                             )
 
-            # B. Resource lookup trace logs (evidence_94, 91, etc.)
+            # B. Resource lookup trace logs
             elif "resource_lookup_trace" in log_file.name:
                 for line in lines:
                     if match_terms_acc(line):
@@ -660,17 +659,17 @@ class StateReconstructor:
                                 state = "EXPOSED_PII" if has_pii else "REDACTED"
                                 observed[res_id] = ObservedResource(system_id="support_platform", resource_id=res_id, category="SUPPORT_MESSAGE", observed_state=state, evidence_id=fid, evidence_time=ef.captured_at)
 
-            # C. Central observability logs & runtime traces (evidence_01, cloud_runtime, application_trace, syslog_archive, etc.)
+            # C. Central observability logs & runtime traces
             elif any(k in log_file.name for k in ["service_events_", "operations_stream_", "cloud_runtime_export", "application_trace", "structured_service_events", "syslog_archive"]):
                 matching_traces = set()
                 for line in lines:
                     if match_terms_acc(line):
-                        m_tr = re.search(r'(?:trace_id|requestId)[\\\"\'\s]*[=:][\\\"\'\s]*([a-zA-Z0-9_\-]+)', line)
+                        m_tr = re.search(r'(?:trace_id|requestId)[\\\"\'\s]*[=:][\\\"\'\s]*([a-zA-Z0-9_\-]+)', line) or re.search(r'\b(tr-\d+)\b', line)
                         if m_tr:
                             matching_traces.add(m_tr.group(1))
 
                 for line in lines:
-                    m_tr = re.search(r'(?:trace_id|requestId)[\\\"\'\s]*[=:][\\\"\'\s]*([a-zA-Z0-9_\-]+)', line)
+                    m_tr = re.search(r'(?:trace_id|requestId)[\\\"\'\s]*[=:][\\\"\'\s]*([a-zA-Z0-9_\-]+)', line) or re.search(r'\b(tr-\d+)\b', line)
                     is_user_line = match_terms_acc(line) or (m_tr and m_tr.group(1) in matching_traces)
                     if not is_user_line:
                         continue
@@ -696,7 +695,7 @@ class StateReconstructor:
                             elif 'rows="1"' in line or 'rows=\\"1\\"' in line or "rows=1" in line or "200" in line or 'rows":1' in line.replace(" ", ""):
                                 observed[res_id] = ObservedResource(system_id="account_service", resource_id=res_id, category="USER_PROFILE", observed_state="PRESENT", evidence_id=fid, evidence_time=ef.captured_at)
 
-            # D. Diagnostic and Delivery logs (evidence_08, notification_delivery, syslog archives)
+            # D. Diagnostic and Delivery logs
             elif "search_index_diagnostic" in log_file.name or "notification_delivery" in log_file.name:
                 for line in lines:
                     if match_terms_acc(line):
@@ -723,7 +722,7 @@ class StateReconstructor:
 
 
 
-        # 5. Check Document PDFs (e.g. delivery_correction_attachment.pdf, evidence_58) <= audit_dt
+        # 5. Check Document PDFs <= audit_dt
         docs_dir = self.dataset_dir / "evidence" / "documents"
         for pdf_file in docs_dir.glob("*.pdf"):
             fid = self.path_to_fid.get(pdf_file.name)

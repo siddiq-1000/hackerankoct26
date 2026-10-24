@@ -4,9 +4,9 @@
 
 During Brief 3 Phase 1 hardening, we investigated the COMPLETE rate between the 32 public sample cases and the 518 full evaluation cases.
 - **Initial Baseline Full-Run COMPLETE Rate:** 71.0% (368/518 cases).
-- **Hardened Final Full-Run COMPLETE Rate:** 39.38% (204/518 cases), with 58.69% INCOMPLETE (304/518) and 1.93% NOT_APPLICABLE (10/518).
+- **Hardened Final Full-Run COMPLETE Rate:** 38.61% (200/518 cases), with 59.46% INCOMPLETE (308/518) and 1.93% NOT_APPLICABLE (10/518).
 - **Public Sample Baseline:** 31.25% COMPLETE (10/32), 68.75% INCOMPLETE (22/32).
-- **Independent Oracle Discrepancy Count:** **0 unexplained discrepancies** across all 204 COMPLETE cases.
+- **Independent Oracle Discrepancy Count:** **0 unexplained discrepancies** across all 200 COMPLETE cases.
 
 The initial discrepancy was traced to three concrete visibility and parsing gaps:
 1. **Omitted Inventory Tables & Embedded JSON Columns:** In `customer_data_inventory_*.sql` and read replicas, 8 distinct tables (`customer_search_documents`, `customer_analytics_profiles`, `support_records`, `customer_exports`, `connector_subscriptions`, `backup_restore_entries`, `security_audit_records`, `customer_profiles`) were previously bypassed by generic SQL queries.
@@ -27,8 +27,8 @@ python code/tools/stats_from_output.py
 
 | Deletion Status | Full-Run Cases (518) | Full-Run Percentage | Public Sample Cases (32) | Public Sample Percentage |
 | :--- | :---: | :---: | :---: | :---: |
-| `COMPLETE` | 204 | 39.38% | 10 | 31.25% |
-| `INCOMPLETE` | 304 | 58.69% | 22 | 68.75% |
+| `COMPLETE` | 200 | 38.61% | 10 | 31.25% |
+| `INCOMPLETE` | 308 | 59.46% | 22 | 68.75% |
 | `NOT_APPLICABLE` | 10 | 1.93% | 0 | 0.00% |
 | **Total** | **518** | **100.00%** | **32** | **100.00%** |
 
@@ -36,41 +36,40 @@ python code/tools/stats_from_output.py
 
 | Number of Verification Steps | Full-Run COMPLETE Cases | Steps Contributed | Sample COMPLETE Cases | Steps Contributed |
 | :---: | :---: | :---: | :---: | :---: |
-| 1 step | 66 | 66 | 2 | 2 |
-| 2 steps | 75 | 150 | 1 | 2 |
-| 3 steps | 8 | 24 | 4 | 12 |
-| 4 steps | 6 | 24 | 0 | 0 |
-| 5 steps | 19 | 95 | 0 | 0 |
-| 6 steps | 12 | 72 | 3 | 18 |
-| 7 steps | 10 | 70 | 0 | 0 |
-| 8 steps | 1 | 8 | 0 | 0 |
-| 9 steps | 3 | 27 | 0 | 0 |
-| 10 steps | 4 | 40 | 0 | 0 |
-| **Total** | **204** | **576 steps** | **10** | **34 steps** |
+| 1 step | 58 | 58 | 2 | 2 |
+| 2 steps | 45 | 90 | 1 | 2 |
+| 3 steps | 42 | 126 | 4 | 12 |
+| 4 steps | 5 | 20 | 0 | 0 |
+| 5 steps | 8 | 40 | 0 | 0 |
+| 6 steps | 15 | 90 | 3 | 18 |
+| 7 steps | 13 | 91 | 0 | 0 |
+| 8 steps | 6 | 48 | 0 | 0 |
+| 9 steps | 1 | 9 | 0 | 0 |
+| 10 steps | 3 | 30 | 0 | 0 |
+| 11 steps | 4 | 44 | 0 | 0 |
+| **Total** | **200** | **646 steps** | **10** | **34 steps** |
 
 ### [C] Verification Operations Tabulation & Policy Basis
 
-| System ID | Verification Operation | Full-Run Count (204 Cases) | Sample Count (10 Cases) | Applicable Rule / Policy Grounding |
+| System ID | Verification Operation | Full-Run Count (200 Cases) | Sample Count (10 Cases) | Applicable Rule / Policy Grounding |
 | :--- | :--- | :---: | :---: | :--- |
-| `account_service` | `VERIFY_RECORD_ABSENT` | 360 | 10 | `rule_01`: `USER_PROFILE` Always `DELETE` |
+| `account_service` | `VERIFY_RECORD_ABSENT` | 357 | 10 | `rule_01`: `USER_PROFILE` Always `DELETE` |
 | `security_service` | `VERIFY_RECORD_PRESENT` | 87 | 7 | `rule_12`: `SECURITY_AUDIT_LOG` retention period `RETAIN` |
-| `backup_service` | `VERIFY_RESTORE_BLOCKED` | 64 | 3 | `rule_14`: `BACKUP_ARCHIVE` restore access blocked `RETAIN` |
+| `analytics_platform` | `VERIFY_RECORD_ANONYMIZED` | 72 | 7 | `rule_07`: `ANALYTICS_PROFILE` anonymization `ANONYMIZE` |
+| `backup_service` | `VERIFY_RESTORE_BLOCKED` | 65 | 3 | `rule_14`: `BACKUP_ARCHIVE` restore access blocked `RETAIN` |
 | `support_platform` | `VERIFY_RECORD_REDACTED` | 34 | 3 | `rule_05`: `SUPPORT_MESSAGE` order context `REDACT` |
 | `integration_service` | `VERIFY_DATA_FLOW_DISABLED` | 30 | 3 | Section 6.4: Integration data flow `DISABLED` |
 | `identity_service` | `VERIFY_RECORD_REDACTED` | 1 | 1 | `rule_15`: `ACCOUNT_TOMBSTONE` stable `user_id` `REDACT` |
-| `analytics_platform` | `VERIFY_RECORD_ANONYMIZED` | 0* | 7 | `rule_07`: `ANALYTICS_PROFILE` anonymization `ANONYMIZE` |
-| **TOTAL VERIFICATION STEPS** | | **576** | **34** | **Reconciled: 576 == 576, 34 == 34 (PASS)** |
-
-*\*Note on Analytics Anonymization: Detailed in `code/docs/analytics_investigation.md`. In the full dataset, all 7 cases with analytics records at `audit_at` contained direct customer emails, requiring INCOMPLETE findings (`REPORT_EXPOSED_PII`). Fully anonymized analytics profiles strip all user identifiers and are not attributable.*
+| **TOTAL VERIFICATION STEPS** | | **646** | **34** | **Reconciled: 646 == 646, 34 == 34 (PASS)** |
 
 ### [D] Reconciliation of COMPLETE Cases by `reported_status`
 
 | Reported Status Claim | Full-Run COMPLETE Cases | Percentage of Complete | Sample COMPLETE Cases |
 | :--- | :---: | :---: | :---: |
-| `NOT_STARTED` | 39 | 19.12% | 3 |
-| `PARTIALLY_COMPLETE` | 53 | 25.98% | 1 |
-| `COMPLETE` | 112 | 54.90% | 6 |
-| **Total COMPLETE Cases** | **204** | **100.00%** | **10** |
+| `NOT_STARTED` | 37 | 18.50% | 3 |
+| `PARTIALLY_COMPLETE` | 52 | 26.00% | 1 |
+| `COMPLETE` | 111 | 55.50% | 6 |
+| **Total COMPLETE Cases** | **200** | **100.00%** | **10** |
 
 ---
 

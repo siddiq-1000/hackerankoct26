@@ -115,7 +115,7 @@ We conducted an exhaustive investigation (`code/docs/complete_rate_investigation
 3. **Hardening & Resolution:**  
    We unified log regex parsing with `r'key[\\\"\'\s]*[=:][\\\"\'\s]*([pattern]+)'` and universal word boundary matchers `(?<![a-zA-Z0-9_])(?:term)(?![a-zA-Z0-9_])`.
 4. **Final Validated Distribution:**  
-   Post-hardening, the full dataset yielded **204 COMPLETE (39.38%)**, **304 INCOMPLETE (58.69%)**, and **10 NOT_APPLICABLE (1.93%)**. Every single COMPLETE case was confirmed against the oracle to have **0 unexplained discrepancies** and **0 prohibited remaining records**.
+   Post-hardening, the full dataset yielded **200 COMPLETE (38.61%)**, **308 INCOMPLETE (59.46%)**, and **10 NOT_APPLICABLE (1.93%)**. Every single COMPLETE case was confirmed against the oracle to have **0 unexplained discrepancies** and **0 prohibited remaining records**.
 
 ---
 

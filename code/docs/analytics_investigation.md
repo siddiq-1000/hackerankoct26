@@ -21,6 +21,8 @@ We conducted an exhaustive investigation across all 180 analytics records in the
    When an analytics profile is properly anonymized, all direct identifying fields (`customer_reference`, `email`, `phone`, `email_hash`) are set to `NULL`. Consequently, searching evidence files by the subject's search terms (name, email, phone, user_id) naturally does not hit the anonymized record. In the public sample ground truth (`sample_output.csv`), the 7 COMPLETE cases (`case_03`, `case_04`, `case_21`, `case_25`, `case_26`, `case_27`, `case_28`) verify their anonymized analytics profile (`VERIFY_RECORD_ANONYMIZED`) by resolving the `ANONYMIZE_RECORD` action recorded in `system_activity.csv` right before `reported_at` and citing the corresponding evidence file (`evidence_94`, `evidence_56`, `evidence_92`) where the record appears with all PII as null.
 4. **Status Invariance:**  
    Recognizing compliant anonymized records adds the evidence-backed `VERIFY_RECORD_ANONYMIZED` check to COMPLETE cases without converting any COMPLETE case to INCOMPLETE or vice versa. The deletion status distribution remains stable.
+5. **Visual Evidence Handling:**  
+   The 11 PNG admin screenshots in `dataset/evidence/images/` (such as `evidence_19`) were transcribed during development by the coding assistant itself and checked into `code/cache/image_transcripts.json`. During the evaluation run, `main.py` parsed these structured transcripts deterministically with 0 runtime API or LLM calls.
 
 ---
 

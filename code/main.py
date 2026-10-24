@@ -88,6 +88,47 @@ def run_deletion_audit(
             "steps_json": json.dumps(steps, separators=(",", ":"))
         })
 
+    # 4. Optional compliant analytics linking for COMPLETE cases (Brief 3D Option A)
+    from code.config import LINK_NULL_IDENTIFIER_ANALYTICS
+    if LINK_NULL_IDENTIFIER_ANALYTICS:
+        from code.analytics_linker import AnalyticsLinker
+        complete_reqs = [
+            {"case_id": r.case_id, "email": r.email, "reported_at": r.reported_at, "audit_at": r.audit_at}
+            for r, row in zip(requests, output_rows)
+            if row["deletion_status"] == "COMPLETE"
+        ]
+        linker = AnalyticsLinker(dataset_dir)
+        pairs = linker.build_batch_pairs(complete_reqs)
+        for row in output_rows:
+            cid = row["case_id"]
+            if cid in pairs:
+                rid, fid = pairs[cid]
+                steps = json.loads(row["steps_json"])
+                has_s = any(s.get("system_id") == "analytics_platform" for s in steps)
+                if not has_s:
+                    steps.append({
+                        "step_no": len(steps) + 1,
+                        "phase": "VERIFICATION",
+                        "system_id": "analytics_platform",
+                        "resource_id": rid,
+                        "operation": "VERIFY_RECORD_ANONYMIZED",
+                        "state": "ANONYMIZED",
+                        "evidence_id": fid
+                    })
+                    sys_priority = {
+                        "account_service": 1,
+                        "security_service": 2,
+                        "support_platform": 3,
+                        "analytics_platform": 4,
+                        "integration_service": 5,
+                        "backup_service": 6,
+                        "identity_service": 7
+                    }
+                    steps.sort(key=lambda s: sys_priority.get(s["system_id"], 99))
+                    for i, s in enumerate(steps, 1):
+                        s["step_no"] = i
+                    row["steps_json"] = json.dumps(steps, separators=(",", ":"))
+
     # Write output.csv with exact headers and UTF-8 encoding
     with open(output_path, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["case_id", "deletion_status", "steps_json"])
