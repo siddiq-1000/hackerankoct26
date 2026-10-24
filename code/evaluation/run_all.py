@@ -28,6 +28,7 @@ TEST_SUITES = [
     ("Public Sample Evaluation", ["code/evaluation/main.py"]),
     ("CSV Format & Contract Validation", ["code/validate.py"]),
     ("Independent Oracle Discrepancy Scan", ["code/tools/analyze_discrepancies.py"]),
+    ("Cross-Document Consistency Check", ["code/tools/consistency_check.py"]),
     ("Pipeline Determinism (SHA-256 Check)", ["code/evaluation/test_determinism.py"]),
 ]
 

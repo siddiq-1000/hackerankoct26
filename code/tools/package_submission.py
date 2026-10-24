@@ -63,7 +63,7 @@ def create_submission_zip():
                 zf.write(fpath, arcname=rel_path)
                 included_entries.append(rel_path)
 
-        # 2. Package evaluation/
+        # 2. Package evaluation/ from code/evaluation/ so reports are accessible at both paths in the archive
         eval_dir = REPO_ROOT / "evaluation"
         if eval_dir.exists():
             for root, dirs, files in os.walk(eval_dir):
@@ -75,6 +75,14 @@ def create_submission_zip():
                     rel_path = fpath.relative_to(REPO_ROOT).as_posix()
                     zf.write(fpath, arcname=rel_path)
                     included_entries.append(rel_path)
+        else:
+            # Map from code/evaluation to evaluation/ in zip root to satisfy AGENTS.md §6.8
+            for rep_name in ["evaluation_report.md", "usage_report.md"]:
+                src = REPO_ROOT / "code" / "evaluation" / rep_name
+                if src.exists():
+                    arc_name = f"evaluation/{rep_name}"
+                    zf.write(src, arcname=arc_name)
+                    included_entries.append(arc_name)
 
         # 3. Package root markdown and requirements
         root_files = ["README.md", "requirements.txt"]

@@ -32,15 +32,15 @@ When multiple rules target the same resource, conflicts are resolved using the f
 
 ### 2. Redaction / Anonymization Overrides Unrestricted Keep (`REDACT` / `ANONYMIZE` > `KEEP`)
 - **Principle:** When a record category is permitted to remain in the system, direct personal identifiers must not remain exposed.
-- **Application:** Account tombstones (`ACCOUNT_TOMBSTONE`, Rule 15) preserve internal referential integrity (e.g. stable `user_id`), but direct identifiers (name, email, phone, email hash) must be redacted. Similarly, analytics profiles (`ANALYTICS_PROFILE`, Rule 14) can be kept only after irreversible anonymization.
+- **Application:** Account tombstones (`ACCOUNT_TOMBSTONE`, rule_15) preserve internal referential integrity (e.g. stable `user_id`), but direct identifiers (name, email, phone, email hash) must be redacted. Similarly, analytics profiles (`ANALYTICS_PROFILE`, rule_07) can be kept only after irreversible anonymization.
 
 ### 3. Disable Data Flow Overrides Active Keep (`DISABLE` > `KEEP`)
 - **Principle:** Active processes that synchronize or export data must be halted to prevent continuous downstream propagation or recreation.
-- **Application:** Integration connectors (`ACTIVE_DATA_FLOW`, Rule 17) must be disabled before changing dependent records.
+- **Application:** Integration connectors (`ACTIVE_DATA_FLOW`, AGENTS.md §6.4) must be disabled before changing dependent records.
 
 ### 4. Block Restore Overrides Unrestricted Backup (`BLOCK` > `KEEP`)
 - **Principle:** Disaster recovery paths must not restore subjects whose data was legally deleted.
-- **Application:** Backups (`BACKUP_ARCHIVE`, Rule 16) must have restore paths blocked before the deletion is considered complete.
+- **Application:** Backups (`BACKUP_ARCHIVE`, rule_14) must have restore paths blocked before the deletion is considered complete.
 
 ---
 
