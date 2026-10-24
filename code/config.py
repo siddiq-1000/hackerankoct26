@@ -2,10 +2,10 @@ from pathlib import Path
 import os
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DATASET_DIR = REPO_ROOT / "dataset"
+DATASET_DIR = Path(os.environ.get("DATASET_DIR", REPO_ROOT / "dataset")).resolve()
 EVIDENCE_DIR = DATASET_DIR / "evidence"
-OUTPUT_CSV_PATH = REPO_ROOT / "output.csv"
-CACHE_DIR = REPO_ROOT / "code" / "cache"
+OUTPUT_CSV_PATH = Path(os.environ.get("OUTPUT_CSV_PATH", REPO_ROOT / "output.csv")).resolve()
+CACHE_DIR = Path(os.environ.get("CACHE_DIR", REPO_ROOT / "code" / "cache")).resolve()
 PROMPTS_DIR = REPO_ROOT / "code" / "prompts"
 
 # LLM Configuration

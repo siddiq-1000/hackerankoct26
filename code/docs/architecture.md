@@ -9,56 +9,29 @@
 
 The deletion audit engine is designed to process the 518 evaluation requests in `dataset/deletion_requests.csv` with 100% reproducibility, zero schema assumptions, strict canonical step sorting, and minimal token/API cost.
 
-```
-                    ┌──────────────────────────────┐
-                    │    deletion_requests.csv     │
-                    └──────────────┬───────────────┘
-                                   │
-                                   ▼
-                       [1] Loader & Registry
-                                   │
-                                   ▼
-                       [2] Intent Classifier
-                                   │
-               ┌───────────────────┴───────────────────┐
-               │                                       │
-     (Non-Deletion Intent)                    (Authorized Deletion)
-               │                                       │
-               ▼                                       ▼
-     NOT_APPLICABLE, []                    [3] Identity Resolver
-                                           (user_id, emails, hashes,
-                                            phones across all time)
-                                                       │
-                                                       ▼
-                                             [4] Evidence Indexer
-                                            (SQLite DBs, JSON caches,
-                                             Logs, Decoded PDFs, Images)
-                                                       │
-                                                       ▼
-                                          [5] State Reconstructor
-                                          (cutoff at case.audit_at;
-                                           grounded vs claimed state)
-                                                       │
-                                                       ▼
-                                             [6] Policy Engine
-                                            (deletion_rules.csv:
-                                             DELETE/REDACT/ANON/RETAIN)
-                                                       │
-                                                       ▼
-                                              [7] Gap Analyzer
-                                           (identify lingering PII,
-                                            flows, unblocked restores)
-                                                       │
-                                                       ▼
-                                              [8] Step Planner
-                                          (FINDING -> REMEDIATION ->
-                                           VERIFICATION, sorted)
-                                                       │
-                                                       ▼
-                                            [9] Output Validator
-                                                       │
-                                                       ▼
-                                            output.csv & Reports
+```mermaid
+flowchart TD
+    A["dataset/deletion_requests.csv"] --> B["[1] DatasetLoader"]
+    B --> C["[2] IntentClassifier"]
+    
+    C -- "Non-Deletion Action" --> NA["Status: NOT_APPLICABLE\nsteps_json: []"]
+    C -- "Authorized Deletion" --> D["[3] IdentityResolver\n(Forward & Backward Audit Traversal)"]
+    
+    D --> E["[4] StateReconstructor\n(Temporal Cutoff <= audit_at)"]
+    
+    EV1[("24 SQLite Snapshots")] --> E
+    EV2[("28 JSON Records & Bundles")] --> E
+    EV3[("26 System Logs & Syslog")] --> E
+    EV4[("4 PDF Documents")] --> E
+    EV5[("11 Image Transcripts")] --> E
+    EV6[("System Activity Stream")] --> E
+    
+    E --> F["[5] GapAnalyzer & ConflictResolver\n(deletion_rules.csv Precedence)"]
+    F --> G["[6] PlanGenerator\n(FINDING -> REMEDIATION -> VERIFICATION)"]
+    
+    G --> H["[7] Canonical Sorter & Validator"]
+    NA --> H
+    H --> I["output.csv\n(518 Validated Rows)"]
 ```
 
 ---

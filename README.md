@@ -51,10 +51,10 @@ The solution uses Python 3.10+ standard libraries (`sqlite3`, `csv`, `json`, `da
 To configure optional LLM-assisted intent verification:
 ```bash
 # On Linux / macOS
-export GEMINI_API_KEY="your-gemini-api-key"
+export GEMINI_API_KEY="<api_key>"
 
 # On Windows (PowerShell)
-$env:GEMINI_API_KEY="your-gemini-api-key"
+$env:GEMINI_API_KEY="<api_key>"
 ```
 *(Note: If no API key is provided, the agent runs in 100% offline rule-based deterministic mode with zero errors and zero cost).*
 
@@ -77,17 +77,31 @@ Output:
 
 ### 3. Running Evaluations & Test Suites
 
-#### A. Run the 32-Case Sample Evaluation (Gate 2)
+#### A. Run the Unified Test Runner (All 8 Verification Suites)
+```bash
+python3 code/evaluation/run_all.py
+```
+*(On Windows: `python code/evaluation/run_all.py`)*
+
+Executes all 8 test suites in a single pass:
+1. Canonical Step Ordering & Tie-Breaker Logic
+2. Policy Conflict Resolution Precedence
+3. Intent Classifier Shuffle Invariance
+4. Custom Evaluation Cases A through G (Adversarial Fixtures)
+5. Public Sample Evaluation (100% Status Accuracy)
+6. CSV Format & Grader Contract Validation
+7. Independent Oracle Discrepancy Scan (0 Unexplained Discrepancies)
+8. Pipeline Determinism & SHA-256 Byte-Identical Repeatability
+
+#### B. Run the 32-Case Sample Evaluation
 ```bash
 python3 code/evaluation/main.py
 ```
-Outputs status accuracy, row accuracy, sequence accuracy, step-level accuracy, and field-level accuracy against `dataset/sample_output.csv`.
 
-#### B. Run the 5 Custom Evaluation Cases (Gate 3)
+#### C. Run the 7 Custom Evaluation Cases (Cases A through G)
 ```bash
 python3 code/evaluation/test_custom_cases.py
 ```
-Executes independent test fixtures for Cases A, B, C, D, and E in `code/evaluation/custom_cases/`.
 
 #### C. Run the Intent Shuffling Independence Test
 ```bash

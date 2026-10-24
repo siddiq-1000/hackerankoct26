@@ -1,6 +1,7 @@
 import argparse
 import csv
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -25,6 +26,11 @@ def run_deletion_audit(
     output_path: Path = OUTPUT_CSV_PATH,
     filename: str = "deletion_requests.csv"
 ) -> Tuple[int, Dict[str, int]]:
+    import code.config as cfg
+    cfg.DATASET_DIR = Path(dataset_dir).resolve()
+    cfg.EVIDENCE_DIR = cfg.DATASET_DIR / "evidence"
+    os.environ["DATASET_DIR"] = str(cfg.DATASET_DIR)
+
     print(f"[*] Starting Ghost Data Still Exists deletion audit pipeline...")
     print(f"[*] Dataset: {dataset_dir / filename}")
     print(f"[*] Destination: {output_path}")
@@ -33,7 +39,7 @@ def run_deletion_audit(
     requests = loader.load_deletion_requests(filename)
     print(f"[*] Loaded {len(requests)} deletion requests.")
 
-    # Sort requests by case_id to ensure output order
+    # Sort requests strictly by case_id ascending (lexicographical string sort)
     requests.sort(key=lambda r: r.case_id)
 
     identities = loader.load_identities()

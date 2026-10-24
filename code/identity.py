@@ -1,12 +1,18 @@
 import hashlib
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Set, List, Dict, Optional
 from code.loaders import UserIdentity, UserAuditEntry
 
+def normalize_text(val: str) -> str:
+    if not val:
+        return ""
+    return unicodedata.normalize("NFKC", val).strip().lower()
+
 def compute_sha256(val: str) -> str:
     if not val:
         return ""
-    clean = val.strip().lower()
+    clean = normalize_text(val)
     return hashlib.sha256(clean.encode("utf-8")).hexdigest()
 
 @dataclass
@@ -51,18 +57,18 @@ class IdentityResolver:
         # Build email to user_id maps
         self.current_email_to_uid: Dict[str, str] = {}
         for uid, ident in identities.items():
-            self.current_email_to_uid[ident.email.strip().lower()] = uid
+            self.current_email_to_uid[normalize_text(ident.email)] = uid
 
         # Build historical map by tracing backward from verified identities
         self.user_to_historical_emails: Dict[str, Set[str]] = {uid: set() for uid in identities}
         for uid, ident in identities.items():
-            curr = ident.email.strip().lower()
+            curr = normalize_text(ident.email)
             user_audits = [a for a in audit_logs if a.user_id == uid and a.field_name == "email"]
             user_audits.sort(key=lambda a: a.event_time, reverse=True)
             chain = {curr}
             for entry in user_audits:
-                chain.add(entry.old_value.strip().lower())
-                chain.add(entry.new_value.strip().lower())
+                chain.add(normalize_text(entry.old_value))
+                chain.add(normalize_text(entry.new_value))
             self.user_to_historical_emails[uid] = chain
 
         self.historical_email_to_uid: Dict[str, str] = {}
@@ -72,7 +78,7 @@ class IdentityResolver:
                     self.historical_email_to_uid[e] = uid
 
     def resolve(self, request_email: str) -> Optional[IdentitySet]:
-        req_norm = request_email.strip().lower()
+        req_norm = normalize_text(request_email)
         user_id = self.current_email_to_uid.get(req_norm)
 
         if not user_id:
@@ -97,13 +103,13 @@ class IdentityResolver:
 
         if ident:
             if ident.email:
-                e_clean = ident.email.strip().lower()
+                e_clean = normalize_text(ident.email)
                 emails.add(e_clean)
                 hashes.add(compute_sha256(e_clean))
             if ident.phone:
                 phones.add(ident.phone.strip())
             if ident.email_hash:
-                hashes.add(ident.email_hash.strip().lower())
+                hashes.add(normalize_text(ident.email_hash))
 
         # Collect from audit logs for this specific user_id
         for entry in self.audit_logs:

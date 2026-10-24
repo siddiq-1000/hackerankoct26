@@ -1,0 +1,65 @@
+{
+  "case_id": "case_custom_g",
+  "title": "Rapid Temporal Activity Oscillation and Strict Audit Cutoff",
+  "request": {
+    "case_id": "case_custom_g",
+    "email": "marcus.vance@example.com",
+    "requested_at": "2026-09-01T10:00:00Z",
+    "reported_status": "COMPLETE",
+    "reported_at": "2026-09-02T10:00:00Z",
+    "audit_at": "2026-09-05T12:00:00Z",
+    "request_text": "I request permanent deletion of all data associated with my account."
+  },
+  "user_identity": {
+    "user_id": "user_custom_g",
+    "name": "Marcus Vance",
+    "email": "marcus.vance@example.com",
+    "phone": "+44 20 7946 0912",
+    "email_hash": "c4ca4238a0b923820dcc509a6f75849b",
+    "updated_at": "2026-08-01T12:00:00Z"
+  },
+  "activities": [
+    {"event_time": "2026-09-05T11:59:50Z", "operation": "DELETE", "result": "SUCCESS"},
+    {"event_time": "2026-09-05T11:59:55Z", "operation": "RESTORE", "result": "RECREATED"},
+    {"event_time": "2026-09-05T12:00:05Z", "operation": "DELETE", "result": "POST_AUDIT_DECOY"}
+  ],
+  "observed_resources_at_audit": {
+    "account_custom_g": {
+      "system_id": "account_service",
+      "resource_id": "account_custom_g",
+      "category": "USER_PROFILE",
+      "observed_state": "PRESENT",
+      "evidence_id": "evidence_01"
+    }
+  },
+  "expected_status": "INCOMPLETE",
+  "expected_steps": [
+    {
+      "step_no": 1,
+      "phase": "FINDING",
+      "system_id": "account_service",
+      "resource_id": "account_custom_g",
+      "operation": "REPORT_REMAINING_RECORD",
+      "state": "PRESENT",
+      "evidence_id": "evidence_01"
+    },
+    {
+      "step_no": 2,
+      "phase": "REMEDIATION",
+      "system_id": "account_service",
+      "resource_id": "account_custom_g",
+      "operation": "DELETE_RECORD",
+      "state": "ABSENT",
+      "evidence_id": ""
+    },
+    {
+      "step_no": 3,
+      "phase": "VERIFICATION",
+      "system_id": "account_service",
+      "resource_id": "account_custom_g",
+      "operation": "VERIFY_RECORD_ABSENT",
+      "state": "ABSENT",
+      "evidence_id": ""
+    }
+  ]
+}

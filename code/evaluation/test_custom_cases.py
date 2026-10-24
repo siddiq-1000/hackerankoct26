@@ -89,8 +89,35 @@ def test_custom_cases():
     print("[PASS] Case E: Reported COMPLETE but unblocked restore risk + active flow detected")
     passed += 1
 
+    # 6. Test Case F (Unicode NFKC Normalization & Homoglyph Safety)
+    with open(custom_dir / "case_f.json", "r", encoding="utf-8") as f:
+        case_f = json.load(f)
+    ident_f = case_f["user_identity"]
+    resolver_f = IdentityResolver({ident_f["user_id"]: UserIdentity(**ident_f)}, [])
+    resolved_id_f = resolver_f.resolve(case_f["request"]["email"])
+    assert resolved_id_f is not None, "Failed to resolve full-width Unicode email"
+    assert resolved_id_f.user_id == "user_custom_f", f"Expected user_custom_f, got {resolved_id_f.user_id}"
+    obs_f = {k: ObservedResource(**v) for k, v in case_f["observed_resources"].items()}
+    gaps_f = [gap_analyzer.analyze_resource(r) for r in obs_f.values() if gap_analyzer.analyze_resource(r)]
+    status_f, steps_f = planner.generate_plan(case_f["case_id"], "account_custom_f", obs_f, gaps_f)
+    assert status_f == case_f["expected_status"], f"Case F status mismatch: {status_f}"
+    assert steps_f == case_f["expected_steps"], f"Case F steps mismatch: {steps_f}"
+    print("[PASS] Case F: Adversarial Unicode NFKC & Homoglyph Normalization")
+    passed += 1
+
+    # 7. Test Case G (Rapid Temporal Oscillation & Strict Cutoff)
+    with open(custom_dir / "case_g.json", "r", encoding="utf-8") as f:
+        case_g = json.load(f)
+    obs_g = {k: ObservedResource(**v) for k, v in case_g["observed_resources_at_audit"].items()}
+    gaps_g = [gap_analyzer.analyze_resource(r) for r in obs_g.values() if gap_analyzer.analyze_resource(r)]
+    status_g, steps_g = planner.generate_plan(case_g["case_id"], "account_custom_g", obs_g, gaps_g)
+    assert status_g == case_g["expected_status"], f"Case G status mismatch: {status_g}"
+    assert steps_g == case_g["expected_steps"], f"Case G steps mismatch: {steps_g}"
+    print("[PASS] Case G: Rapid Temporal Activity Oscillation and Strict Audit Cutoff")
+    passed += 1
+
     print("==========================================")
-    print(f"Gate 3 Result: {passed}/{total} Passed (100.0%)")
+    print(f"Custom Cases Result: {passed}/7 Passed (100.0%)")
     print("==========================================")
 
 if __name__ == "__main__":

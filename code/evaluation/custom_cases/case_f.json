@@ -1,0 +1,43 @@
+{
+  "case_id": "case_custom_f",
+  "title": "Adversarial Unicode NFKC & Homoglyph Normalization",
+  "request": {
+    "case_id": "case_custom_f",
+    "email": "\uff41\uff4c\uff49\uff43\uff45\uff0e\uff46\uff3f\uff4e\uff46\uff4b\uff43\uff20\uff45\uff58\uff41\uff4d\uff50\uff4c\uff45\uff0e\uff43\uff4f\uff4d",
+    "requested_at": "2026-09-01T10:00:00Z",
+    "reported_status": "COMPLETE",
+    "reported_at": "2026-09-02T10:00:00Z",
+    "audit_at": "2026-09-10T12:00:00Z",
+    "request_text": "Please delete my entire profile and wipe all associated personal data."
+  },
+  "user_identity": {
+    "user_id": "user_custom_f",
+    "name": "Alice Smith",
+    "email": "alice.f_nfkc@example.com",
+    "phone": "+1-555-0999",
+    "email_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "updated_at": "2026-08-01T12:00:00Z"
+  },
+  "audit_log": [],
+  "observed_resources": {
+    "account_custom_f": {
+      "system_id": "account_service",
+      "resource_id": "account_custom_f",
+      "category": "USER_PROFILE",
+      "observed_state": "ABSENT",
+      "evidence_id": "evidence_54"
+    }
+  },
+  "expected_status": "COMPLETE",
+  "expected_steps": [
+    {
+      "step_no": 1,
+      "phase": "VERIFICATION",
+      "system_id": "account_service",
+      "resource_id": "account_custom_f",
+      "operation": "VERIFY_RECORD_ABSENT",
+      "state": "ABSENT",
+      "evidence_id": "evidence_54"
+    }
+  ]
+}
