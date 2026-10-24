@@ -23,7 +23,8 @@ DATASET_DIR = REPO_ROOT / "dataset"
 
 EXCLUDED_DIRS = {
     ".git", ".github", "__pycache__", "venv", ".venv", "env",
-    "dataset", ".pytest_cache", ".mypy_cache", ".idea", ".vscode"
+    "dataset", ".pytest_cache", ".mypy_cache", ".idea", ".vscode",
+    "investigation"
 }
 EXCLUDED_FILES = {
     "output.csv", "log.txt", ".env", "code.zip", ".DS_Store", "Thumbs.db",
@@ -112,6 +113,11 @@ def verify_extracted_run():
         with zipfile.ZipFile(OUTPUT_ZIP, "r") as zf:
             zf.extractall(temp_path)
 
+        # Provide dataset directory in sandbox environment (mimics grader benchmark environment)
+        sandbox_dataset = temp_path / "dataset"
+        if not sandbox_dataset.exists():
+            shutil.copytree(DATASET_DIR, sandbox_dataset)
+
         # Confirm expected structure
         required_items = [
             temp_path / "code" / "main.py",
@@ -155,6 +161,16 @@ def verify_extracted_run():
             return False
 
         print("[PASS] Byte-for-byte SHA-256 identity verified against root output.csv.")
+
+        # Rerun run_all.py from extracted sandbox copy
+        print("[*] Rerunning code/evaluation/run_all.py from extracted sandbox copy...")
+        test_run_all_cmd = [sys.executable, str(temp_path / "code" / "evaluation" / "run_all.py")]
+        proc_tests = subprocess.run(test_run_all_cmd, cwd=str(temp_path), env=test_env, capture_output=True, text=True)
+        if proc_tests.returncode != 0:
+            print("[FAIL] run_all.py failed in extracted sandbox copy:")
+            print(proc_tests.stderr or proc_tests.stdout)
+            return False
+        print("[PASS] All test suites in run_all.py passed in extracted sandbox copy.")
         return True
 
 

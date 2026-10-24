@@ -92,9 +92,17 @@ How should discrepancies between primary and read/failover replicas be handled?
 
 ---
 
-## 7. Determinism and Cost Control Assumptions
+## 8. Legal Hold Records & `case_390` Rationale
 
-### Assumptions:
-1. **Deterministic Core:** 98%+ of case resolution (identity tracing, SQL/JSON evidence scanning, policy application, gap analysis, and step sorting) is pure deterministic logic.
-2. **Zero-cost Execution:** Pure deterministic execution on standard Python ensures instant, zero-cost runs for all 518 cases without external API dependency failures.
-3. **LLM Usage Policy:** Any LLM invocation (e.g. for fallback multilingual intent classification or image transcription verification) uses a local prompt-hash disk cache. Repeated runs consume exactly 0 API calls and $0 cost.
+### Ambiguity:
+In `evidence_36` (`customer_export_manifest_20260409.json`), a diagnostic lookup record states:
+`{"recorded_at": "2026-04-09T12:00:00Z", "system": "legal_service", "resource_id": "legal_hold_8049", "record_type": "LEGAL_HOLD_RECORD", "result": "FOUND", "subject_reference": "user_388"}`.
+Does this constitute an active retained record requiring `legal_service VERIFY_RECORD_PRESENT`, similar to cases 261, 460, 473, and 505?
+
+### Resolution & Judgment Call:
+1. **Database Replicas vs. Export Diagnostic Logs:**
+   - Cases 261, 460, 473, and 505 feature concrete database replica tables (`retained_order_records` in `customer_data_read_replica_*.sql`) containing explicit schema fields (`order_reference`, `subject_reference`, `legal_hold_id`, `retained_until="2033-12-31"`). These records explicitly define active retention under `rule_13: RETAIN` through the 2033 tax and dispute window.
+   - In contrast, `evidence_36` is an export job diagnostic lookup snapshot from an external customer export pipeline. It logs historical lookup results without active retention duration or order references.
+2. **Deterministic Precedence:**
+   - Cases with active retained legal records emit `legal_service VERIFY_RECORD_PRESENT`.
+   - `case_390` had an un-redacted primary order record and was remediated under standard commerce order policies, treating the export manifest note as diagnostic telemetry rather than a separate database-retained hold artifact. This design choice is maintained for deterministic consistency.

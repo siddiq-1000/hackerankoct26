@@ -31,6 +31,7 @@ TEST_SUITES = [
     ("Cross-Document Consistency Check", ["code/tools/consistency_check.py"]),
     ("Automated Document Claims Verification", ["code/tools/doc_claims_check.py"]),
     ("AGENTS.md §6.7 No Hardcoded Literal IDs", ["code/evaluation/test_no_hardcoded_ids.py"]),
+    ("Analytics Linker Uniqueness & Sample Isolation", ["code/evaluation/test_analytics_linker_uniqueness.py"]),
     ("Pipeline Determinism (SHA-256 Check)", ["code/evaluation/test_determinism.py"]),
 ]
 

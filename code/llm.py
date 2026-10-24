@@ -25,12 +25,15 @@ def _save_cache(cache: Dict[str, dict]):
     except Exception:
         pass
 
+_warned_no_key = False
+
 def query_llm(
     prompt: str,
     purpose: str = "general",
     case_id: Optional[str] = None,
     system_instruction: str = ""
 ) -> str:
+    global _warned_no_key
     ledger = UsageLedger.get_instance()
     cache = _load_cache()
 
@@ -52,7 +55,9 @@ def query_llm(
     # Not in cache: check for API key
     api_key = GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
-        print(f"[WARNING] GEMINI_API_KEY not configured. Falling back to local heuristic for purpose='{purpose}'.")
+        if not _warned_no_key:
+            print("[INFO] GEMINI_API_KEY not configured. Operating offline with local deterministic heuristics.")
+            _warned_no_key = True
         return ""
 
     # Call Gemini REST API natively with urllib (no third-party lib required)
