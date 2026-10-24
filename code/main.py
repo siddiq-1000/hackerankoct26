@@ -115,16 +115,8 @@ def run_deletion_audit(
                         "state": "ANONYMIZED",
                         "evidence_id": fid
                     })
-                    sys_priority = {
-                        "account_service": 1,
-                        "security_service": 2,
-                        "support_platform": 3,
-                        "analytics_platform": 4,
-                        "integration_service": 5,
-                        "backup_service": 6,
-                        "identity_service": 7
-                    }
-                    steps.sort(key=lambda s: sys_priority.get(s["system_id"], 99))
+                    from code.planner import canonical_step_sort_key
+                    steps.sort(key=canonical_step_sort_key)
                     for i, s in enumerate(steps, 1):
                         s["step_no"] = i
                     row["steps_json"] = json.dumps(steps, separators=(",", ":"))

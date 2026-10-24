@@ -46,12 +46,15 @@ We implemented `code/tools/analytics_link_probe.py` using strict 1-to-1 batch li
 
 ## 3. D1.3 Probe on the Full 518 Cases (Read-Only Analysis)
 
-Applying strict 1-to-1 batch linking across the 204 `COMPLETE` cases in the full dataset:
+Applying strict 1-to-1 batch linking across the 200 `COMPLETE` cases in the full dataset:
 
-- **Total COMPLETE cases:** 204
-- **Cases linked to unambiguous 1-to-1 batches with valid evidence:** **72 cases**
-- **Ambiguous batches (event count != case count):** 62 batches covering 102 cases
-- **Status changes:** **0** (All 72 remain `COMPLETE`; no cases change status).
+- **Total COMPLETE cases:** 200 (out of 200 COMPLETE, 308 INCOMPLETE, 10 NOT_APPLICABLE)
+- **Total batch groups:** 141
+- **Singleton batches (1 request, 1 event) with valid evidence:** **44 cases**
+- **Multi-case batches (size >= 2, N_req == N_ev):** **28 cases** (14 batches of size 2)
+- **Ambiguous batches (event count != case count):** 59 batches covering 97 cases
+- **Multi-Case Batch Withholding:** Because only 2 multi-case batches exist in the public sample (far below the statistical threshold of ~10 required to validate an ordering heuristic) and one sample batch showed inverted order, multi-case batches are withheld to prevent mispairing. Only singleton batches (44 cases) and deterministic cross-evidence links are emitted.
+- **Status changes:** **0** (All cases remain `COMPLETE`; linking affects only verification steps, never case status).
 
 ### 10 Representative Examples of Linked Cases:
 1. `case_51` -> `analytics_2265` (`evidence_94`), justified by `activity_3735` (2026-09-09T10:31:22Z)

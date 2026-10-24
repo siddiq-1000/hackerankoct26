@@ -99,12 +99,21 @@ class PlanGenerator:
                     "evidence_id": ""
                 })
 
-            # Mandatory security audit log verification if security record exists
+            # Mandatory security audit log and legal hold verification if retained record exists
             for res_id, res in observed.items():
                 if res.system_id == "security_service" and ("security_service", res_id) not in verified_resources:
                     raw_steps.append({
                         "phase": "VERIFICATION",
                         "system_id": "security_service",
+                        "resource_id": res_id,
+                        "operation": "VERIFY_RECORD_PRESENT",
+                        "state": "PRESENT",
+                        "evidence_id": ""
+                    })
+                if res.system_id == "legal_service" and ("legal_service", res_id) not in verified_resources:
+                    raw_steps.append({
+                        "phase": "VERIFICATION",
+                        "system_id": "legal_service",
                         "resource_id": res_id,
                         "operation": "VERIFY_RECORD_PRESENT",
                         "state": "PRESENT",
@@ -132,6 +141,17 @@ class PlanGenerator:
                     seen_verifs.add(pair)
 
                 elif res.system_id == "security_service" and res.observed_state == "PRESENT":
+                    raw_steps.append({
+                        "phase": "VERIFICATION",
+                        "system_id": res.system_id,
+                        "resource_id": res.resource_id,
+                        "operation": "VERIFY_RECORD_PRESENT",
+                        "state": "PRESENT",
+                        "evidence_id": res.evidence_id
+                    })
+                    seen_verifs.add(pair)
+
+                elif res.system_id == "legal_service" and res.observed_state == "PRESENT":
                     raw_steps.append({
                         "phase": "VERIFICATION",
                         "system_id": res.system_id,

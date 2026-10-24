@@ -100,6 +100,13 @@ class AnalyticsLinker:
                     pass
 
     def _index_cross_evidence_links(self):
+        """Indexes deterministic cross-evidence links with exact token boundaries.
+        
+        If a user or email is associated with multiple distinct analytics RIDs across evidence,
+        it is flagged as AMBIGUOUS and discarded to prevent false links.
+        """
+        user_to_rids = defaultdict(set)
+
         for fid, ef in self.ev_files.items():
             p = self.dataset_dir / ef["file_path"]
             if not p.exists():
@@ -110,13 +117,13 @@ class AnalyticsLinker:
                     def search(o):
                         if isinstance(o, dict):
                             rid = o.get("resource_id")
-                            if rid in self.all_anon_rids:
+                            if rid and rid in self.all_anon_rids:
                                 em = o.get("email")
                                 uid = o.get("user_id")
                                 if em:
-                                    self.user_to_rid[em.lower()] = rid
+                                    user_to_rids[em.lower()].add(rid)
                                 if uid:
-                                    self.user_to_rid[uid] = rid
+                                    user_to_rids[uid].add(rid)
                             for v in o.values():
                                 search(v)
                         elif isinstance(o, list):
@@ -128,16 +135,37 @@ class AnalyticsLinker:
             elif p.suffix == ".sql":
                 try:
                     for line in open(p, "r", encoding="utf-8", errors="ignore"):
-                        for rid in self.all_anon_rids:
-                            if rid in line:
-                                m_email = re.search(r"'([^\s,']+@[^\s,']+)'", line)
-                                m_user = re.search(r"'(user_\d+)'", line)
+                        # Exact token boundary extraction for analytics RIDs
+                        found_rids = set(re.findall(r"\b(analytics_\d+)\b", line)) & self.all_anon_rids
+                        if found_rids:
+                            m_email = re.search(r"'([^\s,']+@[^\s,']+)'", line)
+                            m_user = re.search(r"'(user_\d+)'", line)
+                            for rid in found_rids:
                                 if m_email:
-                                    self.user_to_rid[m_email.group(1).lower()] = rid
+                                    user_to_rids[m_email.group(1).lower()].add(rid)
                                 if m_user:
-                                    self.user_to_rid[m_user.group(1)] = rid
+                                    user_to_rids[m_user.group(1)].add(rid)
                 except Exception:
                     pass
+            elif p.suffix == ".log":
+                try:
+                    for line in open(p, "r", encoding="utf-8", errors="ignore"):
+                        found_rids = set(re.findall(r"\b(analytics_\d+)\b", line)) & self.all_anon_rids
+                        if found_rids:
+                            m_email = re.search(r'email="?([^\s,"]+@[^\s,"]+)"?', line)
+                            m_user = re.search(r'user_id="?(user_\d+)"?', line)
+                            for rid in found_rids:
+                                if m_email:
+                                    user_to_rids[m_email.group(1).lower()].add(rid)
+                                if m_user:
+                                    user_to_rids[m_user.group(1)].add(rid)
+                except Exception:
+                    pass
+
+        # Keep strictly unambiguous 1-to-1 mappings
+        for user_key, rids in user_to_rids.items():
+            if len(rids) == 1:
+                self.user_to_rid[user_key] = next(iter(rids))
 
     def build_batch_pairs(self, complete_requests) -> Dict[str, Tuple[str, str]]:
         """Pairs COMPLETE requests with verified analytics resources."""
@@ -174,16 +202,15 @@ class AnalyticsLinker:
             max_dt = max(b_rep_dts) + timedelta(minutes=5)
             b_events = [a for a in self.anon_events if min_dt <= parse_iso(a["event_time"]) <= max_dt]
 
-            # Strict 1-to-1 requirement prevents decoy/orphan mispairing
-            if len(b_reqs) == len(b_events):
-                b_reqs.sort(key=lambda r: self.users_by_email.get(r["email"], {}).get("user_id", r["case_id"]))
-                b_events.sort(key=lambda a: a["resource_id"])
-                for r, ev in zip(b_reqs, b_events):
-                    aud_dt = parse_iso(r["audit_at"])
-                    rid = ev["resource_id"]
-                    cands = [(fid, cap) for fid, cap in self.anon_evidence[rid] if cap <= aud_dt]
-                    if cands:
-                        cands.sort(key=lambda x: x[1], reverse=True)
-                        paired[r["case_id"]] = (rid, cands[0][0])
+            # Strict 1-to-1 requirement on singleton batches (withhold multi-case batches to prevent unverified order heuristics)
+            if len(b_reqs) == 1 and len(b_events) == 1:
+                r = b_reqs[0]
+                ev = b_events[0]
+                aud_dt = parse_iso(r["audit_at"])
+                rid = ev["resource_id"]
+                cands = [(fid, cap) for fid, cap in self.anon_evidence[rid] if cap <= aud_dt]
+                if cands:
+                    cands.sort(key=lambda x: x[1], reverse=True)
+                    paired[r["case_id"]] = (rid, cands[0][0])
 
         return paired

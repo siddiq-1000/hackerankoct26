@@ -63,7 +63,7 @@ During hardening, our investigation of the COMPLETE rate gap between sample (31.
 | **Phase 1 Initial** | 368 (71.04%) | 140 (27.03%) | 10 (1.93%) | 103 Unexplained |
 | **After SQL JSON & OCR Fixes** | 228 (44.02%) | 280 (54.05%) | 10 (1.93%) | 37 Unexplained |
 | **Phase 2 Baseline** | 204 (39.38%) | 304 (58.69%) | 10 (1.93%) | 0 Unexplained |
-| **Hardened Final (Trace-Join + Analytics)** | **200 (38.61%)** | **308 (59.46%)** | **10 (1.93%)** | **0 Unexplained** |
+| **Hardened Final (Trace-Join + Analytics + Tombstones/Attachments)** | **194 (37.45%)** | **314 (60.62%)** | **10 (1.93%)** | **0 Unexplained** |
 
 ---
 

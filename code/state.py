@@ -197,9 +197,21 @@ class StateReconstructor:
                             state = "EXPOSED_PII" if has_pii else "ANONYMIZED"
                             observed[r_id] = ObservedResource(system_id="analytics_platform", resource_id=r_id, category="ANALYTICS_PROFILE", observed_state=state, evidence_id=fid, evidence_time=ef.captured_at)
                         elif s_id == "support_platform":
-                            has_pii = bool(rec_data.get("requester_email") or rec_data.get("requester_name") or rec_data.get("requester_phone"))
+                            coll = data.get("collection_name") or rec_data.get("storage_class") or ""
+                            if coll == "ticket_attachments" or "attachment" in str(coll).lower() or "attachment" in r_id.lower():
+                                observed[r_id] = ObservedResource(system_id="support_platform", resource_id=r_id, category="SUPPORT_ATTACHMENT", observed_state="PRESENT", evidence_id=fid, evidence_time=ef.captured_at)
+                            else:
+                                has_pii = bool(rec_data.get("requester_email") or rec_data.get("requester_name") or rec_data.get("requester_phone") or rec_data.get("email"))
+                                state = "EXPOSED_PII" if has_pii else "REDACTED"
+                                observed[r_id] = ObservedResource(system_id="support_platform", resource_id=r_id, category="SUPPORT_MESSAGE", observed_state=state, evidence_id=fid, evidence_time=ef.captured_at)
+                        elif s_id == "identity_service":
+                            has_pii = bool(rec_data.get("name") or rec_data.get("email") or rec_data.get("phone") or rec_data.get("email_hash"))
                             state = "EXPOSED_PII" if has_pii else "REDACTED"
-                            observed[r_id] = ObservedResource(system_id="support_platform", resource_id=r_id, category="SUPPORT_MESSAGE", observed_state=state, evidence_id=fid, evidence_time=ef.captured_at)
+                            observed[r_id] = ObservedResource(system_id="identity_service", resource_id=r_id, category="ACCOUNT_TOMBSTONE", observed_state=state, evidence_id=fid, evidence_time=ef.captured_at)
+                        elif s_id == "security_service":
+                            observed[r_id] = ObservedResource(system_id="security_service", resource_id=r_id, category="SECURITY_AUDIT_LOG", observed_state="PRESENT", evidence_id=fid, evidence_time=ef.captured_at)
+                        elif s_id == "legal_service":
+                            observed[r_id] = ObservedResource(system_id="legal_service", resource_id=r_id, category="LEGAL_HOLD_RECORD", observed_state="PRESENT", evidence_id=fid, evidence_time=ef.captured_at)
                         elif s_id == "integration_service":
                             enabled = bool(rec_data.get("enabled", True))
                             state = "ACTIVE_FLOW" if enabled else "DISABLED"
@@ -500,6 +512,37 @@ class StateReconstructor:
                                         evidence_id=fid,
                                         evidence_time=ef.captured_at
                                     )
+                                elif ds == "support_platform":
+                                    coll = snap.get("collection") or ""
+                                    if coll == "ticket_attachments" or "attachment" in str(rec.get("storage_class")).lower():
+                                        observed[res_id] = ObservedResource(
+                                            system_id="support_platform",
+                                            resource_id=res_id,
+                                            category="SUPPORT_ATTACHMENT",
+                                            observed_state="PRESENT",
+                                            evidence_id=fid,
+                                            evidence_time=ef.captured_at
+                                        )
+                                    else:
+                                        has_pii = bool(rec.get("requester_email") or rec.get("requester_name") or rec.get("requester_phone") or rec.get("email"))
+                                        state = "EXPOSED_PII" if has_pii else "REDACTED"
+                                        observed[res_id] = ObservedResource(
+                                            system_id="support_platform",
+                                            resource_id=res_id,
+                                            category="SUPPORT_MESSAGE",
+                                            observed_state=state,
+                                            evidence_id=fid,
+                                            evidence_time=ef.captured_at
+                                        )
+                                elif ds == "legal_service":
+                                    observed[res_id] = ObservedResource(
+                                        system_id="legal_service",
+                                        resource_id=res_id,
+                                        category="LEGAL_HOLD_RECORD",
+                                        observed_state="PRESENT",
+                                        evidence_id=fid,
+                                        evidence_time=ef.captured_at
+                                    )
                 except Exception:
                     pass
 
@@ -740,16 +783,6 @@ class StateReconstructor:
                         system_id="support_platform",
                         resource_id=res_id,
                         category="SUPPORT_ATTACHMENT",
-                        observed_state="PRESENT",
-                        evidence_id=fid,
-                        evidence_time=ef.captured_at
-                    )
-                elif "legal" in pdf_file.name.lower() or "legal" in ef.origin.lower():
-                    res_id = "legal_hold_001"
-                    observed[res_id] = ObservedResource(
-                        system_id="legal_service",
-                        resource_id=res_id,
-                        category="LEGAL_HOLD_RECORD",
                         observed_state="PRESENT",
                         evidence_id=fid,
                         evidence_time=ef.captured_at

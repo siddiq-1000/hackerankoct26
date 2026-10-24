@@ -112,7 +112,7 @@ def check_file(md_path, del_reqs, sample_reqs, ev_files, user_ids, user_by_email
             cid = m.group(1)
             # Allow custom cases A-G or synthetic mentions if clearly marked
             if cid not in all_reqs and not any(k in line for k in ['case_A', 'case_B', 'synthetic', 'hypothetical']):
-                # Note: some docs might mention ranges like case_533-case_542 which exist
+                # Note: some docs might mention ranges of case IDs that exist
                 errors.append(f"{md_path.name}:{line_no}: Cited case_id '{cid}' not found in requests datasets")
 
         # 3. Check evidence_id mentions

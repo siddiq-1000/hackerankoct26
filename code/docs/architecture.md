@@ -73,7 +73,7 @@ All steps adhere strictly to the vocabulary and order from the problem statement
 
 ## 4. Resource Allocation & Token / Cost Budget: Design Estimate vs Actual Runtime
 
-The original design anticipated a hybrid architecture with up to ~21 total LLM calls (borderline intent classification and visual image transcription). In practice:
+The original design anticipated a hybrid architecture with an initial design estimate of <= 21 total LLM calls (borderline intent classification and visual image transcription). In practice:
 - **Actual Evaluation Run Model Calls:** Exactly **0 runtime LLM calls**. The pipeline operates deterministically via regex intent rules, SQLite engines, and offline caches.
 - **Visual Evidence Handling:** The 11 PNG screenshots from `dataset/evidence/images/` were inspected and transcribed once during development by the coding assistant itself, and saved to `code/cache/image_transcripts.json`. Zero vision API calls or runtime tokens were incurred by `main.py`.
 - **Deterministic Execution Ratio:** 100% of pipeline computation is executed via deterministic Python code.

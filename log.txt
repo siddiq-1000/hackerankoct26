@@ -468,3 +468,71 @@ branch=main
 repo_root=c:\Users\yusra\Downloads\HackerrankOct
 worktree=main
 parent_agent=none
+
+## [2026-10-24T20:32:30.600640+00:00] Checkpoint Investigation: Batch Orderings, Substring Fixes, Flips, and Rule Audit
+
+User Prompt (verbatim, secrets redacted):
+Review findings from reading code/analytics_linker.py and your final report. Generate every number by script. Do not edit past log.txt entries. Do not regenerate output.csv until you send me the checkpoint summary.
+
+1. Pairing rule: in build_batch_pairs you pair batches by sorting requests by user_id string and events by resource_id string. That contradicts analytics_linking.md ("order of deletion events matches order of anonymize events"); your own sample table shows the opposite on the 2026-08-30 batch. Break down the 72 links into singleton batches (1 request, 1 event) vs multi-case batches. For the multi-case batches, test on the sample which orderings are consistent (deletion time, anonymize time, user_id string, user_id numeric, resource_id string, resource_id numeric) and report how many sample batches of size 2+ exist. If fewer than ~10 multi-case sample batches validate the ordering, withhold multi-case batches (emit no analytics step) and keep singletons and deterministic cross-evidence links only. Fix the docs to match the real rule.
+2. Fix the substring bug in _index_cross_evidence_links (rid in line): use exact-token regexes with boundaries. Handle one user mapping to multiple rids (ambiguous -> no link). Add tests for analytics_901 vs analytics_9010 collisions. Scan logs and image transcripts or state not scanned.
+3. Reconcile step changes & account lookups: explain why '94 COMPLETE cases changed' vs '72 gained analytics steps' (list the 22 other rows and why). Reconcile why earlier checkpoint said account lookups for 416/417/517 returned rows=0 404 whereas later case_417 had rows=1 200.
+4. Examine 4 status flips (case_416, 417, 420, 517): print audit_at, log line timestamp, file captured_at, and all other evidence up to audit_at. Apply 'latest evidence at or before audit_at wins' per resource. Add precedence to conflict_resolution.md and unit test.
+5. Rule coverage vs sample: tabulate which of the 15 rules' categories appear in sample steps. For categories in sample but 0 in full run (rule_06 attachments, rule_09 exports, rule_13 legal hold, rule_02 secondary identifiers), prove with raw searches whether evidence exists. Reconcile legal hold count (checkpoint said 1, final table said 0).
+6. Cleanup: move one-off investigation scripts to code/tools/investigation/ with exploratory README. Extend test_no_hardcoded_ids.py to cover maintained tools and scan investigation separately. Confirm append_turn_log.py only appends agent-supplied text.
+7. Docs updates: update analytics_linking.md with current counts (200/308/10). Show usage_report.md names who transcribed screenshots with tokens unavailable; architecture.md labels <= 21 calls as design estimate; short section on policy vs state knowledge.
+8. Checkpoint Summary: present checkpoint summary covering Items 1-5 BEFORE modifying or regenerating output.csv. Await user reply!
+
+Agent Response Summary:
+Conducted full investigation across Items 1-5 with data generated strictly by scripts. Proved on sample ground truth that multi-case batch ordering heuristics are unvalidated (only 2 sample batches exist, with inverted ordering), justifying withholding multi-case batches and retaining 44 singletons plus deterministic links. Fixed substring collision bug and multi-RID ambiguity in analytics linker. Reconciled all 22 other step-change rows and account lookup discrepancies. Proved temporal precedence on the 4 status flips where live logs captured seconds before audit_at supersede 5-day-old snapshots. Audited all 15 rules against evidence and sample truth, explaining why attachments defaulted to rule_05 and locating the 6 legal holds. Reorganized 55 investigation tools into code/tools/investigation/, updated docs, and prepared the comprehensive checkpoint summary while strictly leaving output.csv untouched.
+
+Actions:
+* Analyzed sample batch ordering on multi-case batches; proved order inversion and justified singleton-only retention (44 cases)
+* Fixed substring collision bug in code/analytics_linker.py with exact-token regexes and multi-RID ambiguity handling
+* Reconciled the 22 other COMPLETE cases with changed steps and resolved account lookup trace discrepancy
+* Audited timeline and evidence for case_416, 417, 420, 517; added temporal evidence precedence to code/docs/conflict_resolution.md
+* Conducted raw evidence audit for rule_02, 06, 09, 13; located 6 legal holds and identified support attachment collection classification
+* Moved 55 one-off scripts into code/tools/investigation/ with exploratory README
+* Extended code/evaluation/test_no_hardcoded_ids.py to verify maintained operational tools
+* Updated code/docs/analytics_linking.md, usage_report.md, and architecture.md with authoritative metrics
+
+Context:
+tool=Antigravity
+model=gemini-3.8-flash
+branch=main
+repo_root=c:\Users\yusra\Downloads\HackerrankOct
+worktree=main
+parent_agent=none
+
+## [2026-10-24T21:12:40.360857+00:00] Final Hardening: Support Attachments, Tombstones, Legal Holds & Regeneration
+
+User Prompt (verbatim, secrets redacted):
+Checkpoint approved with these conditions. Proceed through regeneration and the final gates WITHOUT another checkpoint, unless a stop condition below triggers. Generate every identifier (case ids, emails, evidence ids) by script from the CSVs; do not type them by hand. Your last message gave different emails for case_416/417/420/517 than your checkpoint; explain and print the real ones from deletion_requests.csv.
+
+A. Support attachments (rule_06): classify by the record's source collection/table (ticket_attachments, etc.), not by id prefix. Check rule_06's condition ("belongs only to the deletion subject") against shared context; otherwise it is rule_05 REDACT. Validate on the sample: precision/recall against sample_output.csv for support steps (DELETE vs REDACT; cases 7, 10, 13 and any others). Report how many full-run rows change operations.
+B. Tombstones (rule_15): count all tombstone records in evidence (all tables/JSON/logs/transcripts), link them by the retained user_id, and compare with the output. The sample has 3 of 32 cases with tombstones (identity_service verify redacted; cases 24/31/32) vs 1 of 518 in the full run. Explain or fix. Rerun sample 32/32.
+C. Legal holds (rule_13): for each of the 6 legal holds, print the case, the subject, the hold window (start/end), audit_at, and the resulting output row. State how an active hold is treated (VERIFY_RECORD_PRESENT vs anything else) and flag as a judgment call.
+D. Prevalence audit: for every (system_id, operation) pair in the grammar, compute its share of steps in the sample vs the full run, broken down by status. List all pairs where the rate differs by more than 3x in either direction (flagging sample-only and full-run-only pairs). Put this table in code/docs/prevalence_audit.md.
+E. Evidence-citation rule for VERIFY_RECORD_ABSENT in COMPLETE rows: state the exact rule used to pick evidence_id for absent records. Prove that it reproduces all 10 sample COMPLETE citations. Explain why evidence_54 was the fallback in earlier runs and verify the 20 changed rows.
+F. Regenerate output.csv with the singleton-only analytics links, the cross-evidence links, the 4 flips, and the A-C fixes. Rerun run_all, preflight, consistency_check, doc_claims_check, check_log, package_submission (dual identical copies of evaluation/).
+G. STOP CONDITION: if more than 15 statuses change or more than 150 rows' steps change vs the previous output.csv, stop and report; otherwise finalize.
+Send: SHA-256, status distribution, rows changed vs the previous output.csv by status, status flips (list from script), zip listing, commit hash, prevalence audit results, and NOT VERIFIED / JUDGMENT CALLS.
+
+Agent Response Summary:
+Completed final hardening fulfilling all approved checkpoint conditions (A-G). Implemented source collection classification for support attachments (rule_06 vs rule_05), discovered and audited all 10 account tombstones across evidence with 4 PII-exposure flips, parsed and verified active legal holds under rule_13, executed full prevalence audit across all 62 grammar pairs, established exact evidence-citation rules for absence verification, and regenerated root output.csv (194 COMPLETE, 314 INCOMPLETE, 10 NOT_APPLICABLE). All preflight checks, doc consistency tests, and extracted sandbox packaging (code.zip) passed flawlessly.
+
+Actions:
+* Classified support ticket attachments by collection name in code/state.py
+* Audited deleted_customer_references in SQL/JSON and handled unredacted tombstone PII
+* Parsed and integrated active legal holds into code/state.py and code/planner.py
+* Conducted full grammar prevalence audit and created code/docs/prevalence_audit.md
+* Regenerated root output.csv and updated all reports and docs
+* Verified zero hardcoded IDs, documentation claims, and clean extracted sandbox run
+
+Context:
+tool=Antigravity
+model=gemini-3.8-flash
+branch=main
+repo_root=c:\Users\yusra\Downloads\HackerrankOct
+worktree=main
+parent_agent=none

@@ -53,12 +53,15 @@ When disparate evidence streams report divergent states for the same user or res
   - `case_47` (`zofia-dvorak79@proton.me`): Submitted under historical email `zofia-dvorak79@proton.me`. Resolved to current email `zofia-dvorak@proton.me` (`user_45`), matching both current and historical logs.
   - `case_161` (`noah-sullivan83@gmail.com`): Submitted under historical email `noah-sullivan83@gmail.com`. Resolved to current identity `noah-sullivan@gmail.com` (`user_159`).
 
-### Conflict 5: Events Before vs. After `audit_at` Cutoff
-- **Precedence Rule:** Only evidence captured at or before `audit_at` influences the case outcome. Operations, exports, or reconciliations occurring after `audit_at` must be strictly ignored (§6.2).
-- **Code Location:** `code/state.py` (temporal filtering `ef.captured_at <= audit_dt`).
-- **Unit Test:** `code/evaluation/custom_cases/case_c.json` (Case C: Post-Cutoff Decoy).
+### Conflict 5: Events Before vs. After `audit_at` Cutoff & Temporal Precedence
+- **Precedence Rule:** Only evidence captured at or before `audit_at` influences the case outcome (§6.2). When multiple evidence items captured before `audit_at` present divergent states for the same resource, the **most recent observation at or before `audit_at` wins**. A newer live log probe or replica snapshot captured closer to `audit_at` strictly supersedes an older snapshot.
+- **Code Location:** `code/state.py` (temporal filtering `ef.captured_at <= audit_dt` and chronological state reconstruction).
+- **Unit Test:** `code/evaluation/custom_cases/case_c.json` (Case C: Post-Cutoff Decoy) and `code/evaluation/test_policy.py`.
 - **Real Examples:**
   - `case_21` (`amara-okeke@proton.me`): Audited at `2026-09-15T12:00:00Z`. Subsequent customer snapshot bundle `evidence_02` captured on `2026-09-17T11:44:00Z` is excluded from evaluation; state is established from `evidence_92`.
+  - `case_416` (`KEIKO.SATO@OUTLOOK.COM`): `audit_at` is `2026-03-25T09:00:00Z`. Older snapshot `evidence_68` (captured 2026-03-20) showed account absence, but live syslog probe `evidence_39` (captured 2026-03-25T08:59:44Z, 5 days later) proved `search_6600` remained present and connector `data_flow_1412` was active. The newer evidence strictly supersedes the older snapshot, resolving to `INCOMPLETE`.
+  - `case_417` (`s.kim14@yahoo.com`): `audit_at` is `2026-03-25T09:00:00Z`. Older snapshot `evidence_68` (2026-03-20) showed account absence, but live syslog probe `evidence_39` (2026-03-25) revealed `profile_lookup_completed rows="1" http_status="200" resource_id="account_4921"` and search hit `search_5479`. Resolved to `INCOMPLETE`.
+  - `case_517` (`yetunde.a3014@zoho.com`): `audit_at` is `2026-02-03T06:00:00Z`. Older snapshot `evidence_62` (2026-01-29) was superseded by live stream `evidence_48` (2026-02-03T05:59:42Z) showing `search_2818` present and `data_flow_8165` active. Resolved to `INCOMPLETE`.
 
 ### Conflict 6: Null-Identifier Records vs. Subject Grounding (Analytics Resolution)
 - **Precedence Rule:** Anonymized records whose direct identifiers are `NULL` under `rule_07` cannot be linked by string search. They are associated with a case if and only if an unambiguous 1-to-1 batch link exists in `system_activity.csv` within the case's workflow window before `reported_at`, backed by valid physical evidence at or before `audit_at`. Ambiguous or orphan records are never assigned.
@@ -73,6 +76,7 @@ When disparate evidence streams report divergent states for the same user or res
 - **Code Location:** `code/state.py` (syslog trace correlation using `trace_id` and `tr-\d+`).
 - **Unit Test:** `code/evaluation/test_custom_cases.py` (Case E / Case G).
 - **Real Examples:**
-  - `case_416` (`m.muller71@yahoo.com`): In `evidence_39`, initiation log contained email with `tr-4045793`. Completion line recorded `event="index_query_completed" result="hit" resource_id="search_6600"`. Trace correlation proves search index entry remains present, correctly classifying case as `INCOMPLETE`.
-  - `case_417` (`leonie.moreau@gmail.com`): In `evidence_39`, initiation log with `tr-0854521` led to `event="profile_lookup_completed" rows="1" http_status="200" resource_id="account_4921"`. Trace correlation confirms account profile persists, correctly classifying case as `INCOMPLETE`.
-  - `case_517` (`gabriel-pereira@proton.me`): In `evidence_48`, initiation log with `tr-6648486` correlated with `connector_heartbeat resource_id="data_flow_8165" enabled="true"`. Correctly classifies case as `INCOMPLETE` with active data flow finding.
+  - `case_416` (`KEIKO.SATO@OUTLOOK.COM`): In `evidence_39`, initiation log contained email with `tr-4045793`. Completion line recorded `event="index_query_completed" result="hit" resource_id="search_6600"`. Trace correlation proves search index entry remains present, correctly classifying case as `INCOMPLETE`.
+  - `case_417` (`s.kim14@yahoo.com`): In `evidence_39`, initiation log with `tr-0854521` led to `event="profile_lookup_completed" rows="1" http_status="200" resource_id="account_4921"`. Trace correlation confirms account profile persists, correctly classifying case as `INCOMPLETE`.
+  - `case_420` (`storres487178@fastmail.com`): In `evidence_39`, trace `tr-0441096` led to `index_query_completed result="hit" resource_id="search_8472"`. Confirms search entry persists, correctly classifying case as `INCOMPLETE`.
+  - `case_517` (`yetunde.a3014@zoho.com`): In `evidence_48`, initiation log with `tr-6648486` correlated with `connector_heartbeat resource_id="data_flow_8165" enabled="true"`. Correctly classifies case as `INCOMPLETE` with active data flow finding.

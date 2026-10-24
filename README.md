@@ -71,7 +71,7 @@ python3 code/main.py
 
 Output:
 - Generates root-level `output.csv` containing exactly 518 data rows (`case_33` through `case_550`), sorted strictly by `case_id`.
-- Validated status distribution: **200 COMPLETE (38.61%)**, **308 INCOMPLETE (59.46%)**, **10 NOT_APPLICABLE (1.93%)**.
+- Validated status distribution: **194 COMPLETE (37.45%)**, **314 INCOMPLETE (60.62%)**, **10 NOT_APPLICABLE (1.93%)**.
 - Automatically executes internal schema, vocabulary, and sequence validation.
 
 ---
