@@ -84,6 +84,10 @@ During hardening, our investigation of the COMPLETE rate gap between sample (31.
 - *Failure:* 11 PNG screenshots under `dataset/evidence/images/` were unread by text-based loaders.
 - *Improvement:* Processed all 11 admin screenshots through OCR into `code/cache/image_transcripts.json`. The state reconstructor now transparently integrates UI screenshot evidence into the case timeline.
 
+### 5. Analytics Finding Canonical Normalization
+- *Failure:* Syslog-extracted analytics exposures for `case_413` and `case_514` emitted `REPORT_REMAINING_RECORD` instead of `REPORT_EXPOSED_PII`, despite category `ANALYTICS_PROFILE` under `rule_07` mandating `ANONYMIZE`.
+- *Improvement:* Standardized observed state to `EXPOSED_PII` across all syslog parsers, ensuring that all 61 analytics exposure cases follow the canonical sequence: `REPORT_EXPOSED_PII` -> `ANONYMIZE_RECORD` -> `VERIFY_RECORD_ANONYMIZED`.
+
 ---
 
 ## 5. Custom Evaluation Test Cases (Cases A through G)

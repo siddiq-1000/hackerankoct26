@@ -687,7 +687,7 @@ class StateReconstructor:
                         elif "support" in res_id:
                             observed[res_id] = ObservedResource(system_id="support_platform", resource_id=res_id, category="SUPPORT_MESSAGE", observed_state="EXPOSED_PII", evidence_id=fid, evidence_time=ef.captured_at)
                         elif "analytics" in res_id:
-                            observed[res_id] = ObservedResource(system_id="analytics_platform", resource_id=res_id, category="ANALYTICS_PROFILE", observed_state="PRESENT", evidence_id=fid, evidence_time=ef.captured_at)
+                            observed[res_id] = ObservedResource(system_id="analytics_platform", resource_id=res_id, category="ANALYTICS_PROFILE", observed_state="EXPOSED_PII", evidence_id=fid, evidence_time=ef.captured_at)
                         elif "data_flow" in res_id:
                             observed[res_id] = ObservedResource(system_id="integration_service", resource_id=res_id, category="ACTIVE_DATA_FLOW", observed_state="ACTIVE_FLOW", evidence_id=fid, evidence_time=ef.captured_at)
                         elif "account" in res_id:

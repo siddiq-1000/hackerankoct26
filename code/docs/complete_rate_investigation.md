@@ -119,8 +119,8 @@ Total unexplained discrepancies on COMPLETE cases: 0
 
 | # | Case ID | Evidence File | Service | Timestamp | Log Event & Details Proving Absence |
 | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | `case_83` | `evidence_88` | `account_service` | 2026-08-22T10:21:13Z | `profile_lookup_started` `resource_id=account_081` `lookup_key=nicolas.n7090@zoho.com` |
-| 2 | `case_83` | `evidence_88` | `account_service` | 2026-08-22T10:21:13Z | `profile_lookup_completed` `resource_id=account_081` `rows=0` `http_status=404` |
+| 1 | `case_121` | `evidence_88` | `account_service` | 2026-08-22T10:21:13Z | `profile_lookup_started` `resource_id=account_081` `lookup_key=nicolas.n7090@zoho.com` |
+| 2 | `case_121` | `evidence_88` | `account_service` | 2026-08-22T10:21:13Z | `profile_lookup_completed` `resource_id=account_081` `rows=0` `http_status=404` |
 | 3 | `case_416` | `evidence_39` | `account_service` | 2026-03-25T08:52:03Z | `profile_lookup_started` `lookup_key=KEIKO.SATO@OUTLOOK.COM` |
 | 4 | `case_416` | `evidence_39` | `search_service` | 2026-03-25T08:59:02Z | `index_query_started` `match_key=KEIKO.SATO@OUTLOOK.COM` |
 | 5 | `case_416` | `evidence_39` | `integration_service` | 2026-03-25T08:59:04Z | `connector_config_read_started` `subject_key=KEIKO.SATO@OUTLOOK.COM` |
@@ -139,7 +139,7 @@ Total unexplained discrepancies on COMPLETE cases: 0
 
 There are exactly 66 cases in `output.csv` where a single verification step (`account_service VERIFY_RECORD_ABSENT`) proved complete deletion.
 - **Root Cause:** The subject only ever held a primary profile in `account_service`. No ancillary services (connectors, backups, analytics profiles, support tickets, exports) were ever created or linked. Evidence at or before `audit_at` (e.g. replica snapshots and readback logs confirming `rows=0`) proves the account was deleted.
-- **Sample Precedent:** Matches `sample_output.csv` `case_03` and `case_04`, which output solely `account_service VERIFY_RECORD_ABSENT`.
+- **Sample Precedent:** Matches `sample_output.csv` `case_01` (`account_001`) and `case_02` (`account_002`), which output solely `account_service VERIFY_RECORD_ABSENT`. In contrast, `case_03` has 3 verification steps (`account_service`, `security_service`, `analytics_platform`) and `case_04` has 2 verification steps (`account_service`, `analytics_platform`).
 
 #### Complete Verification Manifest for All 66 Single-Step Cases:
 

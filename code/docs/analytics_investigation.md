@@ -133,13 +133,13 @@ There are exactly **7 cases** in the full run where an analytics finding is the 
   ```text
   2026-03-25T08:55:11Z <12>1 node-8 analytics_platform tr-6131824 - - level=WARN instance="analytics-5" pod="analytics-8ee6" region="us-east-2" resource_id="analytics_4523" event="analytics_identity_scan" matched_value="amara-okafor@gmail.com" direct_identifiers="1" detector="direct_identifier"
   ```
-- **Verdict:** `REPORT_REMAINING_RECORD` (`PRESENT`). Active identity scan explicitly flagged direct identifier present. Non-compliant.
+- **Verdict:** `REPORT_EXPOSED_PII` (`PRESENT`). Active identity scan explicitly flagged direct identifier present (`matched_value="amara-okafor@gmail.com"`). Remediated via `ANONYMIZE_RECORD` (`ANONYMIZED`) and verified via `VERIFY_RECORD_ANONYMIZED` (`ANONYMIZED`).
 
-### 7. `case_50` (`user_49`, Chloe Dubois, `chloe.dubois@gmail.com`)
+### 7. `case_50` (`user_20`, Omar Darwish, `darwish.omar@icloud.com`)
 - **Evidence Cited:** `evidence_19` (`evidence/images/analytics_profile_view_20260713.png`)
 - **Raw Row (OCR Transcript):**
-  Customer Analytics Dashboard displaying profile for Chloe Dubois with email `chloe.dubois@gmail.com` and cohort `general_shopper`.
-- **Verdict:** `REPORT_EXPOSED_PII` (`PRESENT`). Analytics dashboard explicitly displays user name and email. Non-compliant.
+  Customer Analytics Dashboard displaying profile for Omar Darwish (`user_20`) with email `darwish.omar@icloud.com` and cohort `general_shopper`.
+- **Verdict:** `REPORT_EXPOSED_PII` (`PRESENT`). Analytics dashboard explicitly displays user name and email. Remediated via `ANONYMIZE_RECORD` (`ANONYMIZED`) and verified via `VERIFY_RECORD_ANONYMIZED` (`ANONYMIZED`).
 
 ### Statutory Conclusion on All 7 Cases:
 An unrelated reader or compliance auditor applying `rule_07` would unequivocally judge every one of these 7 records as non-anonymized and in direct violation of the deletion mandate.
