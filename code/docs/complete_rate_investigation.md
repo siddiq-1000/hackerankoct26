@@ -51,26 +51,49 @@ python code/tools/stats_from_output.py
 
 ### [C] Verification Operations Tabulation & Policy Basis
 
-| System ID | Verification Operation | Full-Run Count (194 Cases) | Sample Count (10 Cases) | Applicable Rule / Policy Grounding |
-| :--- | :--- | :---: | :---: | :--- |
-| `account_service` | `VERIFY_RECORD_ABSENT` | 351 | 10 | `rule_01`: `USER_PROFILE` Always `DELETE` |
-| `security_service` | `VERIFY_RECORD_PRESENT` | 127 | 7 | `rule_12`: `SECURITY_AUDIT_LOG` retention period `RETAIN` |
-| `backup_service` | `VERIFY_RESTORE_BLOCKED` | 65 | 3 | `rule_14`: `BACKUP_ARCHIVE` restore access blocked `RETAIN` |
-| `analytics_platform` | `VERIFY_RECORD_ANONYMIZED` | 45 | 7 | `rule_07`: `ANALYTICS_PROFILE` anonymization `ANONYMIZE` |
-| `support_platform` | `VERIFY_RECORD_REDACTED` | 36 | 3 | `rule_05`: `SUPPORT_MESSAGE` order context `REDACT` |
-| `integration_service` | `VERIFY_DATA_FLOW_DISABLED` | 30 | 3 | Section 6.4: Integration data flow `DISABLED` |
-| `identity_service` | `VERIFY_RECORD_REDACTED` | 5 | 1 | `rule_15`: `ACCOUNT_TOMBSTONE` stable `user_id` `REDACT` |
-| `legal_service` | `VERIFY_RECORD_PRESENT` | 2 | 0 | `rule_13`: `LEGAL_HOLD_RECORD` active hold `RETAIN` |
-| **TOTAL VERIFICATION STEPS** | | **661** | **34** | **Reconciled: 661 == 661, 34 == 34 (PASS)** |
+Per AGENTS.md §6.3, COMPLETE cases emit only evidence-backed verification steps proving the state at `audit_at`. The 661 verification steps across the 194 COMPLETE cases represent emitted verification steps, not unique records or unique services per case. The presence of a service in this aggregate table does not mean every case required every service-level check; steps are emitted only when participant-visible evidence captured at or before `audit_at` establishes that specific compliant state.
 
-### [D] Reconciliation of COMPLETE Cases by `reported_status`
+| System ID | Verification Operation | State | Unique Cases (out of 194) | Case Prevalence (%) | Total Emitted Steps | Applicable Rule / Policy Grounding |
+| :--- | :--- | :--- | :---: | :---: | :---: | :--- |
+| `account_service` | `VERIFY_RECORD_ABSENT` | `ABSENT` | 194 | 100.00% | 351 | `rule_01`: `USER_PROFILE` Always `DELETE` |
+| `security_service` | `VERIFY_RECORD_PRESENT` | `PRESENT` | 127 | 65.46% | 127 | `rule_12`: `SECURITY_AUDIT_LOG` within the supplied retention period `RETAIN` |
+| `backup_service` | `VERIFY_RESTORE_BLOCKED` | `BLOCKED` | 60 | 30.93% | 65 | `rule_14`: `BACKUP_ARCHIVE` restore access blocked `RETAIN` |
+| `analytics_platform` | `VERIFY_RECORD_ANONYMIZED` | `ANONYMIZED` | 45 | 23.20% | 45 | `rule_07`: `ANALYTICS_PROFILE` anonymization `ANONYMIZE` |
+| `support_platform` | `VERIFY_RECORD_REDACTED` | `REDACTED` | 36 | 18.56% | 36 | `rule_05`: `SUPPORT_MESSAGE` order context `REDACT` |
+| `integration_service` | `VERIFY_DATA_FLOW_DISABLED` | `DISABLED` | 30 | 15.46% | 30 | AGENTS.md §6.4: Integration data flow `DISABLED` |
+| `identity_service` | `VERIFY_RECORD_REDACTED` | `REDACTED` | 5 | 2.58% | 5 | `rule_15`: `ACCOUNT_TOMBSTONE` stable `user_id` `REDACT` |
+| `legal_service` | `VERIFY_RECORD_PRESENT` | `PRESENT` | 2 | 1.03% | 2 | `rule_13`: `LEGAL_HOLD_RECORD` active hold `RETAIN` |
+| **TOTAL VERIFICATION STEPS** | | | **194 Cases** | — | **661** | **Reconciled: 661 total steps across 194 cases (PASS)** |
 
-| Reported Status Claim | Full-Run COMPLETE Cases | Percentage of Complete | Sample COMPLETE Cases |
-| :--- | :---: | :---: | :---: |
-| `NOT_STARTED` | 35 | 18.04% | 3 |
-| `PARTIALLY_COMPLETE` | 51 | 26.29% | 1 |
-| `COMPLETE` | 108 | 55.67% | 6 |
-| **Total COMPLETE Cases** | **194** | **100.00%** | **10** |
+### [D] Status Reconciliation: Reported Claims vs. Ground Truth at `audit_at`
+
+In `dataset/deletion_requests.csv`, `reported_status` reflects an unverified claim recorded by the commerce platform at `reported_at`. Per AGENTS.md §6.5–§6.6, reported statuses and operation results are claims rather than proof. The final deletion status is reconstructed strictly from participant-visible evidence available at or before each case's specific `audit_at` cutoff date.
+
+#### Full Cross-Tabulation Matrix (518 Cases)
+
+| Original `reported_status` | Final `COMPLETE` | Final `INCOMPLETE` | Final `NOT_APPLICABLE` | Total Original Claims | Original Share (%) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| `COMPLETE` | 108 (42.52%) | 146 (57.48%) | 0 (0.00%) | **254** | **49.03%** |
+| `PARTIALLY_COMPLETE` | 51 (33.55%) | 101 (66.45%) | 0 (0.00%) | **152** | **29.34%** |
+| `NOT_STARTED` | 35 (31.25%) | 67 (59.82%) | 10 (8.93%) | **112** | **21.62%** |
+| **Final Output Totals** | **194 (37.45%)** | **314 (60.62%)** | **10 (1.93%)** | **518** | **100.00%** |
+
+#### Reconciliation of Status Findings
+
+1. **Qualification of the 146 Initially Reported COMPLETE Cases Classified as INCOMPLETE:**
+   Of the requests initially reported as `COMPLETE` that were ultimately classified as `INCOMPLETE`, the evidence identified remaining records, exposed PII, or active synchronization/restore risks. When categorized hierarchically, these 146 cases break down as:
+   - **125 cases** exhibited remaining records requiring deletion (`REPORT_REMAINING_RECORD` in `search_service`, `account_service`, `export_service`, or support attachments).
+   - **9 cases** exhibited exposed PII only (`REPORT_EXPOSED_PII` in retained support conversations or analytics profiles without lingering primary records).
+   - **12 cases** exhibited active synchronization or restore risks only (`REPORT_ACTIVE_DATA_FLOW` or `REPORT_RESTORE_RISK` without remaining records or exposed PII).
+   - **Total:** $125 + 9 + 12 = \mathbf{146}$ cases. (Not all 146 contained lingering static records; 21 cases failed due to exposed PII or active synchronization/restore recreation risks).
+
+2. **Evidence Grounding for the 86 Cases Classified as COMPLETE:**
+   - **51 cases** originally claiming `PARTIALLY_COMPLETE` and **35 cases** originally claiming `NOT_STARTED` were classified as `COMPLETE` because physical evidence available at or before `audit_at` corroborated that all required treatments were satisfied and zero recreation risks existed.
+   - Every cited evidence file has `captured_at <= audit_at` (0 temporal violations).
+   - The evidence establishes the state at `audit_at`, without making unsupported claims about specific internal microservice queuing mechanics, background worker scheduling, or the exact moment deletion took effect.
+
+3. **Grounded Completions from Reported COMPLETE (108 cases):**
+   Physical evidence available at or before `audit_at` corroborated that all prohibited records were absent and all required treatments were satisfied, yielding $108 + 51 + 35 = \mathbf{194}$ `COMPLETE` cases.
 
 ---
 
